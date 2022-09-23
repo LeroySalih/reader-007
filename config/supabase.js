@@ -5,7 +5,7 @@ const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_KEY
 const supbaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL
 console.table({
     supbaseUrl,
-    supabaseKey ,
+    key:  supabaseKey && supabaseKey.length > 0 ? supabaseKey.slice(0, 5) + '...' : 'undefined',
     
 });
 
