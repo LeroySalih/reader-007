@@ -11,7 +11,7 @@ const startOfWeek = (dt) => {
     .format("yyyy-mmm-dd")
 }
 
-export default  () => {
+export const Classes =  () => {
     
     const [classAssignments, setClassAssignments] = useState([]);
     const [currentClass, setCurrentClass] = useState('')
@@ -165,3 +165,6 @@ const AssignmentsForWeek = ({week, assignments}) => {
         </style>
     </>
 }
+
+
+export default Classes;

@@ -10,7 +10,7 @@ import Link from 'next/link'
 import { AuthenticatedTemplate, UnauthenticatedTemplate, useMsal } from "@azure/msal-react";
 
 
-export default () => {
+const ApplicationBar = () => {
 
     const {instance, accounts} = useMsal();
 
@@ -43,3 +43,6 @@ export default () => {
 </AppBar>
     )
 }
+
+
+export default ApplicationBar;

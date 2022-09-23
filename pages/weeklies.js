@@ -26,7 +26,7 @@ const AssignmentTitle = styled.div`
 const DueDate = styled.div`
     font-family: 'Roboto', sans-serif;
 `
-export default () => {
+export const Weeklies = () => {
 
     const [classAssignemnts, setClassAssignments] = useState(null);
     const [currentWeek, setCurrentWeek] = useState(null);
@@ -177,14 +177,14 @@ const ClassAssignmentsSummary =({classAssignemnts, currentWeek}) => {
                     <tr>
                         <td>Tony</td>
                         {
-                            ['10EC', '10BS2', '11EC', '11BS2', '12BS', '13BS'].map(c => <td><ClassId status={currentData[c] != undefined}>{c}</ClassId></td>)
+                            ['10EC', '10BS2', '11EC', '11BS2', '12BS', '13BS'].map((c, i) => <td key={i}><ClassId  status={currentData[c] != undefined}>{c}</ClassId></td>)
                         }
                         
                     </tr>
                     <tr>
                         <td>Leroy</td>
                         {
-                            ['7C_It1', '8C_It1', '9C_It1', '10BS1', '10CS', '11BS1', '11CS'].map(c => <td><ClassId status={currentData[c] != undefined}>{c}</ClassId></td>)
+                            ['7C_It1', '8C_It1', '9C_It1', '10BS1', '10CS', '11BS1', '11CS'].map((c, i) => <td key={i}><ClassId status={currentData[c] != undefined}>{c}</ClassId></td>)
                         }
                     </tr>
 
@@ -193,3 +193,5 @@ const ClassAssignmentsSummary =({classAssignemnts, currentWeek}) => {
           </>
 
 }
+
+export default Weeklies; 

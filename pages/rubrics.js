@@ -1,7 +1,7 @@
 import {useEffect, useState} from 'react'
 import { supabase }  from "../config/supabase"
 
-export default() => {
+const Rubrics = () => {
 
     const [rubrics, setRubrics] = useState(null);
     const [filter, setFilter] = useState('');
@@ -130,3 +130,6 @@ const Rubric = ({rubric}) => {
                 `}</style>
             </div>
 }
+
+
+export default Rubrics;
