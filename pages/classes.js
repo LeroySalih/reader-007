@@ -143,7 +143,7 @@ const AssignmentsForWeek = ({week, assignments, asc}) => {
                                        <div>
                                             <span>{
                                                     asc && asc.filter(item => item.assignmentId == a["assignmentId"])
-                                                              .map(item => <span>{item.status}:{item.count}</span>)
+                                                              .map((item,i) => <span key={i}>{item.status}:{item.count}</span>)
                                                   }</span>
                                             
                                             

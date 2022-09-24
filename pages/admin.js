@@ -312,7 +312,7 @@ const writeSubmissionsToDb = async (submissions, classId, assignmentId) => {
 
 
 
-export default () => {
+const AdminPage = () => {
 
     const [classData, setClassData ] = useState(null);
    
@@ -562,3 +562,5 @@ export default () => {
     
     </>
 }
+
+export default AdminPage;
