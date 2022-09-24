@@ -60,15 +60,15 @@ export const Weeklies = () => {
         }
         return classAssignemnts
                     .map(ca => {
-                        const dueWeek = spacetime(ca["Due Date"])
+                        const dueWeek = spacetime(ca["dueDate"])
                                             .weekStart("Sunday")
                                             .startOf('week')
                                             .format("yyyy-mmm-dd")
                         
 
                         return {...ca, 
-                                assignmentTitle:ca["Assignment Title"], 
-                                dueDate: ca["Due Date"],
+                                assignmentTitle:ca["assignmentTitle"], 
+                                dueDate: ca["dueDate"],
                                 dueWeek}
                         }
                     )
@@ -78,8 +78,8 @@ export const Weeklies = () => {
                         }
                             
                         prev[curr.dueWeek][curr.className] = {
-                            assignmentTitle: curr["Assignment Title"], 
-                            dueWeek: curr["Due Week"],
+                            assignmentTitle: curr["assignmentTitle"], 
+                            dueWeek: curr["dueWeek"],
                             dueDate: curr.dueDate,
                             webUrl : curr.webUrl
                         }
@@ -134,7 +134,7 @@ const SelectWeek = ({weeks, onChange}) => {
 }
 
 const ClassAssignments = ({classAssignemnts, currentWeek}) => {
-
+    console.log("classAssignments", classAssignemnts)
     if (classAssignemnts === null)
         return <pre></pre>
 
