@@ -1,8 +1,7 @@
 import Link from 'next/link'
 
 const Rubric = ({rubric}) => {
-    console.log(rubric)
-    
+
     if (rubric === undefined || rubric === null)
         return <h1>Loading</h1>
 
