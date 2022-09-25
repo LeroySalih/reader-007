@@ -22,7 +22,7 @@ export const Classes =  () => {
 
         const allDates = classAssignments.reduce((prev, curr) => {
             
-            prev[startOfWeek(curr["Due Date"])] = 0
+            prev[startOfWeek(curr["dueDate"])] = 0
     
             return prev
         }, {});
@@ -35,7 +35,7 @@ export const Classes =  () => {
                                     .rpc("getclassassignments")
 
         error && console.error(error)
-        console.log("DATA", data);
+        // console.log("DATA", data);
         setClassAssignments(data)
         setCurrentClass(data[0].className)
 
@@ -85,14 +85,25 @@ export const Classes =  () => {
 
         const allDD = allDueDates(classAssignments);
 
+        //console.log("AllDD", allDD);
+
         const result = {}
 
         allDD.forEach(dd => {
             //result[dd] = 1
             //console.log(currentClass, classAssignments.filter(ca => startOfWeek(ca["Due Date"]) == dd && ca.className == currentClass))
-            result[dd] = classAssignments.filter(ca => startOfWeek(ca["classId"]) == dd && ca.className == currentClass)
+
+            result[dd] = classAssignments
+                                .filter(ca => { 
+                                    // console.log("Start of Week", startOfWeek(ca["dueDate"]), dd, ca.className, currentClass)
+                                    return startOfWeek(ca["dueDate"]) == dd && ca.className == currentClass
+                                }
+                                
+                                )
+            
         });
 
+        console.log("Result", result);
         setClassAssignmentsByDueDate(result);
 
     }, [classAssignments, currentClass])
@@ -107,16 +118,13 @@ export const Classes =  () => {
             
             </div>
             
+            
             {
-
-                console.log("CABD", classAssignmentsByDate)
-            }
-            {
-                classAssignmentsByDate && (
-                    Object.keys(classAssignmentsByDate).map((k,i) => (
-                        <AssignmentsForWeek key={i} week={k} assignments={classAssignmentsByDate[k]} asc={assignmentSubmissionCount}/>
-                    ))
-                )
+                classAssignmentsByDate && 
+                    
+                        <AssignmentsForClass   assignments={classAssignmentsByDate} asc={assignmentSubmissionCount}/>
+                    
+                
             }
 
            
@@ -124,29 +132,87 @@ export const Classes =  () => {
 }
 
 
+const Assignment = ({assignment, week}) => {
+    console.log("Assignment", assignment)
+    return <><div className="display">
+                <div className="weekTitle">{week}</div>
+                
+                <div>
+                    {
+                        assignment.map(a => (<div>{a.assignmentTitle}</div>))
+                    }
+                </div>
 
-const AssignmentsForWeek = ({week, assignments, asc}) => {
-    console.log("Assignents", assignments)
+            </div>
+            <style jsx="true">{`
+
+                    
+                    .weekTitle {
+                        font-weight : 800;
+                        padding-right: 2rem;
+                    }
+
+                    .display {
+                        display :flex;
+                        flex-direction : row;
+                        border: solid 1px silver;
+                        margin: 2rem;
+                        padding: 1rem;
+                        border-radius: 1rem;
+                        box-shadow: 0px 10px 10px #c0c0c0;
+                    }
+
+            `}
+            </style>
+            </>
+}
+
+
+const AssignmentsForClass = ({assignments, asc}) => {
+    console.log("Object.values(assignments)", Object.values(assignments))
+    return  <>
+                Assignments
+                <div>{Object.keys(assignments).map((a, i) => <Assignment key={i} week={a} assignment={assignments[a]}/>)}</div>
+                <style jsx="true">{`
+
+                    .assignment-card {
+                        border: silver 1px solid;
+                    }
+
+                `}</style>
+            </>
+}
+
+/*
+
+const AssignmentsForClass = ({assignments, asc}) => {
+   // console.log("week", week)
+   // console.log("assignments", assignments)
+   // console.log("asc", asc)
+
+   const week = "not set"
+   console.log("Assignments", assignments)
     return <>
         <div className="assignmentCard">
-            <h1>Assignment</h1>
+            
         <table>
             <tbody>
                 <tr>
                     <td className="week">{week}</td>
                     <td className="assignmentTitleCell">
                         {
-                            assignments.map((a,i) => (
+                            Object.keys(assignments)
+                                .filter(a => assignments[a]["dueWeek"] == week)
+                                .map((a,i) => (
                                 <div key={i} className="assignmentTitle">
                                         
-                                       <a href={a["webUrl"]} target="_new">{a["assignmentTitle"]}</a> 
+                                       <a href={assignments[a]["webUrl"]} target="_new">{assignments[a]["assignmentTitle"]}</a> 
+                                       {/* Display Assignment Status Count}
                                        <div>
                                             <span>{
-                                                    asc && asc.filter(item => item.assignmentId == a["assignmentId"])
+                                                    asc && asc.filter(item => item.assignmentId == assignments[a]["assignmentId"])
                                                               .map((item,i) => <span key={i}>{item.status}:{item.count}</span>)
                                                   }</span>
-                                            
-                                            
                                        </div>
                                        
                                        
@@ -177,7 +243,7 @@ const AssignmentsForWeek = ({week, assignments, asc}) => {
            .week {
                 color: #584a4a;
                 font-weight: 600;
-                /* margin-right: 4rem; */
+                /* margin-right: 4rem; 
             }
 
             .assignmentTitle {
@@ -192,6 +258,8 @@ const AssignmentsForWeek = ({week, assignments, asc}) => {
         </style>
     </>
 }
+
+*/
 
 
 export default Classes;
