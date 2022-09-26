@@ -1,7 +1,37 @@
 import {useEffect, useState} from 'react'
 import { supabase }  from "../config/supabase"
 import spacetime from 'spacetime';
+import Typography from '@mui/material/Typography';
 
+import Tooltip, { tooltipClasses } from '@mui/material/Tooltip';
+
+
+import { styled } from '@mui/material/styles';
+
+const LightTooltip = styled(({ className, ...props }) => (
+    <Tooltip {...props} classes={{ popper: className }} />
+  ))(({ theme }) => ({
+    [`& .${tooltipClasses.tooltip}`]: {
+      backgroundColor: theme.palette.common.white,
+      color: 'rgba(0, 0, 0, 0.87)',
+      boxShadow: theme.shadows[1],
+      fontSize: 11,
+    },
+  }));
+  
+
+
+const HtmlTooltip = styled(({ className, ...props }) => (
+    <Tooltip {...props} classes={{ popper: className }} />
+  ))(({ theme }) => ({
+    [`& .${tooltipClasses.tooltip}`]: {
+      backgroundColor: '#f5f5f9',
+      color: 'rgba(0, 0, 0, 0.87)',
+      maxWidth: 220,
+      fontSize: theme.typography.pxToRem(12),
+      border: '1px solid #dadde9',
+    },
+  }));
 
 
 const startOfWeek = (dt) => {
@@ -110,11 +140,14 @@ export const Classes =  () => {
 
     return <>
             <div className="pageHeader">
-                <h1>Classes ({currentClass})</h1>
-                <div>{assignmentSubmissionCount && assignmentSubmissionCount.length} assignment data</div>
-                <select onChange={(e) => setCurrentClass(e.target.value)} value={currentClass    }>
-                    {getClasses().map((c, i) => <option key={i} value={c}>{c}</option>)}
-                </select>
+
+                <h1>Scheme of Work for  
+                    <select onChange={(e) => setCurrentClass(e.target.value)} className="class-selector" value={currentClass }>
+                        {getClasses().map((c, i) => <option key={i} value={c}>{c}</option>)}
+                    </select>
+                </h1>
+                
+                
             
             </div>
             
@@ -127,25 +160,83 @@ export const Classes =  () => {
                 
             }
 
+            <style jsx="true">
+                {`
+                   .class-selector {
+                        margin-left: 2rem;
+                        padding: 1rem;
+                        font-size: 1.5rem;
+                        font-weight: 800;
+                        border: none;
+                    }
+
+                    .class-selector:focus {
+                        border: none
+                    }
+
+                    .pageHeader {
+                       
+                        margin: 2rem;
+                        border-bottom: solid 1px silver;
+                    }
+                `}
+            </style>
            
             </>
 }
 
 
 const Assignment = ({assignment, week}) => {
-    console.log("Assignment", assignment)
+    
+
+    const [counter, setCounter] = useState(0);
+    const [tooltipText, setTooltipText] = useState('')
+
+    const handleOpen = async () => {
+        const {data, error} = await supabase.from("Assignments").select().eq("id", assignment[0].assignmentId)
+
+        data != undefined && console.log("data", data)
+        error != undefined && console.log("Assignemnt", assignment[0]);
+
+        setCounter(prev => prev + 1)
+        setTooltipText(data[0]["dueDateTime"])
+    }
+
+    const handleClose = async () => {
+        setTooltipText('')
+    }
+
     return <><div className="display">
                 <div className="weekTitle">{week}</div>
                 
                 <div>
                     {
-                        assignment.map(a => (<div>{a.assignmentTitle}</div>))
+                        assignment.map(a => (<div>
+                            <HtmlTooltip
+                                onOpen={handleOpen}
+                                title={
+                                <>
+                                    <Typography color="inherit">{a.assignmentTitle}</Typography>
+                                    {
+                                        tooltipText
+                                    }
+                                </>
+                                }
+                            >
+                                
+                                <a href={a.webUrl} className="assignmentTitle">{a.assignmentTitle}</a>
+                            </HtmlTooltip>
+                            
+                            </div>))
                     }
                 </div>
 
             </div>
             <style jsx="true">{`
 
+                    .assignmentTitle {
+                        pointer : cursor;
+                    }
                     
                     .weekTitle {
                         font-weight : 800;
@@ -171,7 +262,7 @@ const Assignment = ({assignment, week}) => {
 const AssignmentsForClass = ({assignments, asc}) => {
     console.log("Object.values(assignments)", Object.values(assignments))
     return  <>
-                Assignments
+                
                 <div>{Object.keys(assignments).map((a, i) => <Assignment key={i} week={a} assignment={assignments[a]}/>)}</div>
                 <style jsx="true">{`
 

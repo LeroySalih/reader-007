@@ -21,12 +21,7 @@ const onlyMyClasses = (classData) => {
             .sort((a, b) => a.displayName > b.displayName ? 1 : -1)
 }
 
-
-
-
-
-
-const fetchClassData = async (instance, account, loginRequest)  => {
+const fetchClasses = async (instance, account, loginRequest)  => {
 
     const classes = await fetchData(instance, account, loginRequest, {key: "getClasses"});
 
@@ -45,6 +40,14 @@ const fetchAssignmentData = async (instance, account, loginRequest, ctx)  => {
     const assignments = await fetchData(instance, account, loginRequest, {key: "getAssignment", ...ctx});
 
     return assignments;
+}
+
+const fetchClassMembersForClass = async (instance, account, loginRequest, ctx) => {
+
+    
+    const cm = await fetchData(instance, account, loginRequest, {key: "getClassMembers", classId: ctx.classId});
+
+    return cm.map(c => {return {...c, classId: ctx.classId}});
 }
 
 const fetchRubricData = async (instance, account, loginRequest)  => {
@@ -259,19 +262,6 @@ const writeClassMembersToDb = async (classsMemberData, classId) => {
   }
 
   classsMemberData.forEach(async (cm) => {
-    
-    //console.log( "Writting ClassMember", cm);
-
-    
-    /*
-    const {result: data, error} = await supabase.rpc('upsertmember', {
-      iclassid: cm.classId,
-      iuserid: cm.id,
-      igivenname: cm.givenName,
-      isurname: cm.surname,
-      iemail: cm.email
-    });
-    */
     await writeClassMemberToDb(cm, classId);
     await writeUserToDb(cm);
   });
@@ -300,18 +290,6 @@ const writeSubmissionToDb = async(submission, classId, assignmentId) => {
 }
 
 
-const writeSubmissionsToDb = async (submissions, classId, assignmentId) => {
-
-  //console.log("Submission", submissions, classId, assignmentId);
-  //console.table(submissions);
-  submissions.forEach(async (s) => {
-    await writeSubmissionToDb(s, classId, assignmentId)
-  })
-}
-
-
-
-
 const AdminPage = () => {
 
     const [classData, setClassData ] = useState(null);
@@ -330,14 +308,12 @@ const AdminPage = () => {
     // also doesn't support the delta api, so we need to call all and only process most recent (by default)
     const loadClassData = async () => {
         //console.log("Loading Class Data")
-        const result = await fetchClassData(instance, accounts[0])
+        const result = await fetchClasses(instance, accounts[0])
         
         // result.forEach(t => pushItemToQueue(msgTypes.class,  {classId: t.id}));
 
         await writeClassDataToDb(result)
     }
-
-    
 
     const loadAssignmentData = async () => {
         
@@ -374,7 +350,6 @@ const AdminPage = () => {
         
     }
 
-
     const loadRubricData =async () => {
       //console.log("Loading Rubric Data")
       
@@ -391,8 +366,6 @@ const AdminPage = () => {
 
       //enqueueSnackbar(`Loaded ${result.length} Rubrics`)
     }
-
-
 
     const getNextAssignmentForSubmissions = async () => {
         //get assignments
@@ -418,104 +391,71 @@ const AdminPage = () => {
 
     }
 
+    const loadClassMembers = async () => {
 
-    const loadAssignment2 = async (classId, assignmentId) => {
+        const {data: classes, error: classesError} = await supabase.from("Classes").select();
+        const {data: currentUsers, error: usersError} = await supabase.from("Users").select();
 
-        // fetch the assignment for id, assignmentId
-        // fetch submissions for assignmentId, 
-        // fetch the outcomes for each submission
-        const assignment = await fetchAssignmentData(instance, accounts[0], loginRequest, {classId, assignmentId})
+        const userIds = currentUsers.map(u => i.id);
 
-        //console.log("Assignment:", assignment);
-
-        const submissions = await fetchSubmissionsForAssignment(instance, accounts[0], loginRequest, {classId, assignmentId})
-
-        //console.log("Submissions", submissions)
-
-        const outcomes = [];
-
-        await submissions
-                .filter(s => s.status != "working")
-                .forEach(async (s) => {
-            const o = await fetchOutcomeForSubmission (instance, accounts[0], loginRequest, {classId, assignmentId, submissionId : s.id});
-
-            outcomes.push(o);
-        });
-
-        console.log("Outcomes", outcomes);
+        let allClasses = []
 
 
-        // Update the db that this assignment has been calculated.
-        const {error} = await supabase
-            .from("Assignments")
-            .update({submissionLastUpdated: spacetime().format("iso") })
-            .match({id: assignment.id});
+        for (const c of classes) {
 
-        error != undefined && console.error(error)
+            console.log("Getting members for", c.displayName)
+            const cm = await fetchClassMembersForClass(instance, accounts[0], loginRequest, {classId: c.id});
 
-        return {
-            assignment, submissions, outcomes
+            
+            allClasses = allClasses.concat(cm);
+
         }
-    }
 
-    const delay = ms => new Promise(res => setTimeout(res, ms));
-
-    const loadMyAssignments = async () => {
-
-        console.log("Fetching all assignments")
-        const assignments = await fetchMyAssignments(instance, accounts[0], loginRequest)
-
-        console.log(`Loaded ${assignments.length} assignments` );
-
-        [assignments[0]]
-            .map(async (a,i) => {
-                await delay(5000);
-                console.log(`Processing ${i}`);
-                const result = await loadAssignment2(a.classId, a.id);
-                
-                console.log(result);
-        });
-
-
-
-    }
-
-    const loadAssignment3 = async () => {
-        
-        // get the next assignment to fetch
-        const {data : assignment, error} = await supabase
-                                .from("Assignments")
-                                .select("id, classId")
-                                .eq('submissionLastUpdated', spacetime([2020, 1, 1]).format('iso'))
-                                .limit(1)
-                                .maybeSingle();
-
-
-        console.log(assignment);
-        error != undefined && console.error(error)
-
-        if (assignment != undefined){
-
-            setIndex(assignment.id)
-
-            // get the submissions for the assignment
-            const submissions = await fetchSubmissionsForAssignment(
-                    instance, 
-                    accounts[0], 
-                    loginRequest, 
-                    {classId: assignment.classId, assignmentId: assignment.id}
-                    )
-            console.log("Submissions", submissions);
-        }
-        
-        // get the outcomes for each submission 
-
-        // update the fact that we've processed this assignment
-        const {data: result, error: updateError} = await supabase
-                                 .from("Assignments")
-                                 .update({'submissionLastUpdated': spacetime().format('iso')})
-                                 .match({id: assignment.id})
     
+        console.log("All ClassMembers", allClasses);
+
+        console.log("Writing Class Members")
+        
+        
+        for (const c of allClasses){
+
+            console.log("Upserting to ClassMember", {userId: c.id, classId:c.classId, ...c});
+
+            const {data: classMemberWrite, erorr: classMemberError} = await supabase.from("ClassMembers").upsert({
+            userId: c.id, 
+            classId:c.classId});
+
+            classMemberError !== undefined && console.error(classMemberError); 
+
+            if (!userIds.includes(c.id)){
+                const {data: userWrite, erorr: userError} = await supabase.from("Users").upsert(
+                    {
+                        id:         c.id, 
+                        givenName:  c.givenName,
+                        surname:    c.surname,
+                        email:      c.userPrincipalName
+                    }
+                    );
+    
+                userError !== undefined && console.error(userError);
+            } else {
+                console.log("Skipping ", c.surname)
+            }
+            
+    
+        }
+
+        
+    
+
+       
+
+
+
+
+
+
+       
     }
 
     const resetAssignments = async () => {
@@ -529,18 +469,6 @@ const AdminPage = () => {
     }
 
     const [index, setIndex] = useState(0)
-
-    useEffect( ()=>{
-
-        
-
- //       const timer = setInterval(loadAssignment3, 2000)
-
- //       return ()=> {
- //           clearInterval(timer);
- //       }
-    }, []);
-
 
     return <>
         <h1>Admin Page {index}</h1>
@@ -556,10 +484,10 @@ const AdminPage = () => {
             <button onClick={() => resetAssignments()}>Reset Assignments Data</button>
             <button onClick={loadRubricData}>Load Rubric Data</button>
             <button onClick={loadNextSubmissionsData}>Load Submissions Data</button>
+            <button onClick={loadClassMembers}>Load Class Members</button>
             
         </AuthenticatedTemplate>
-        
-    
+
     </>
 }
 

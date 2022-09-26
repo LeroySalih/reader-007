@@ -10,9 +10,9 @@ import { SnackbarProvider, enqueueSnackbar } from 'notistack'
 function MyApp({ Component, pageProps }) {
   return <MsalProvider instance={msalInstance}>
             <AppBar/>
-            <SnackbarProvider >
+            
               <Component {...pageProps} />
-            </SnackbarProvider>
+            
             
         </MsalProvider>
 }

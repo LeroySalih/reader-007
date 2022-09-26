@@ -37,6 +37,7 @@ export const Weeklies = () => {
 
         error && console.error(error)
         
+        // console.log("RPC::getclassassignments", data.filter(a => a.className == '10EC'))
         setClassAssignments(data)
 
         return data
@@ -48,7 +49,7 @@ export const Weeklies = () => {
     }, [])
 
     useEffect(()=>{
-        classAssignemnts && setCurrentWeek(Object.keys(configureClassAssignments(classAssignemnts))[0])
+        classAssignemnts && setCurrentWeek(weeks()[0])
     }, 
     [classAssignemnts])
 
@@ -73,6 +74,7 @@ export const Weeklies = () => {
                         }
                     )
                     .reduce( (prev, curr) => { 
+
                         if (prev[curr.dueWeek] == null){
                             prev[curr.dueWeek] = {}
                         }
@@ -84,8 +86,8 @@ export const Weeklies = () => {
                             webUrl : curr.webUrl
                         }
                         
+                        return prev;
 
-                        return prev
                     }, {})
     }
 
@@ -95,30 +97,38 @@ export const Weeklies = () => {
     }
 
     const weeks = () => {
+
         if (classAssignemnts === null) {
             return []
         }
-        return Object.keys(configureClassAssignments(classAssignemnts))
+
+        return Object.keys(configureClassAssignments(classAssignemnts)).sort( (a,b) => a < b ? 1 : -1)
+
     }
  
     return <>
-        <h1>Weeklies for W/C {classAssignemnts && <SelectWeek weeks={weeks()} onChange={handleSelectWeek}/>}</h1> 
-        
+        <h1>Weeklies for W/C {classAssignemnts && <SelectWeek weeks={weeks()} onChange={handleSelectWeek} value={currentWeek}/>}</h1> 
         
         {
                 classAssignemnts !== null && 
                 currentWeek && 
                 <table>
+                    <tbody>
                     <tr>
                         <td>
                             <table>
-                                <ClassAssignments classAssignemnts={configureClassAssignments(classAssignemnts)} currentWeek={currentWeek}/>
+                                <ClassAssignments 
+                                    classAssignemnts={configureClassAssignments(classAssignemnts)} 
+                                    currentWeek={currentWeek}/>
                             </table>
                         </td>
                         <td style={{verticalAlign: "baseline"}}>
-                            <ClassAssignmentsSummary classAssignemnts={configureClassAssignments(classAssignemnts)} currentWeek={currentWeek}/>
+                            <ClassAssignmentsSummary 
+                                    classAssignemnts={configureClassAssignments(classAssignemnts)} 
+                                    currentWeek={currentWeek}/>
                         </td>
                     </tr>
+                    </tbody>
                 </table>
                 
         } 
@@ -127,14 +137,16 @@ export const Weeklies = () => {
 
 
 
-const SelectWeek = ({weeks, onChange}) => {
-    return <select onChange={(e) => onChange(e.target.value)}>
+const SelectWeek = ({weeks, onChange, value}) => {
+    
+    return weeks ? <select onChange={(e) => onChange(e.target.value)} value={value}>
         {weeks && weeks.map(w => <option key={w} value={w}>{w}</option>)}
-    </select>
+    </select> : <></>
 }
 
 const ClassAssignments = ({classAssignemnts, currentWeek}) => {
-    console.log("classAssignments", classAssignemnts)
+    // console.log("classAssignments", classAssignemnts)
+    
     if (classAssignemnts === null)
         return <pre></pre>
 
@@ -162,7 +174,8 @@ const ClassAssignmentsSummary =({classAssignemnts, currentWeek}) => {
 
     return <>
                 <table>
-                    <tr><td colspan="5"><h4>Team Summary Table</h4></td></tr>
+                    <tbody>
+                    <tr><td colSpan="5"><h4>Team Summary Table</h4></td></tr>
                     <tr>
                         <td>Tim</td>
                         <td><ClassId status={currentData['7A_It1'] != undefined}>7A_It1</ClassId></td>
@@ -187,7 +200,7 @@ const ClassAssignmentsSummary =({classAssignemnts, currentWeek}) => {
                             ['7C_It1', '8C_It1', '9C_It1', '10BS1', '10CS', '11BS1', '11CS'].map((c, i) => <td key={i}><ClassId status={currentData[c] != undefined}>{c}</ClassId></td>)
                         }
                     </tr>
-
+                    </tbody>
                 </table>
                 
           </>
