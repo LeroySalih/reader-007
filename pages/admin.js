@@ -483,7 +483,7 @@ const AdminPage = () => {
             <button onClick={loadAssignmentData}>Load Assignment Data</button>
             <button onClick={() => resetAssignments()}>Reset Assignments Data</button>
             <button onClick={loadRubricData}>Load Rubric Data</button>
-            <button onClick={loadNextSubmissionsData}>Load Submissions Data</button>
+            
             <button onClick={loadClassMembers}>Load Class Members</button>
             
         </AuthenticatedTemplate>

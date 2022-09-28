@@ -107,7 +107,7 @@ export const Weeklies = () => {
     }
  
     return <>
-        <h1>Weeklies for W/C {classAssignemnts && <SelectWeek weeks={weeks()} onChange={handleSelectWeek} value={currentWeek}/>}</h1> 
+        <h1>Weeklies for W/C {classAssignemnts && currentWeek && <SelectWeek weeks={weeks()} onChange={handleSelectWeek} value={currentWeek}/>}</h1> 
         
         {
                 classAssignemnts !== null && 

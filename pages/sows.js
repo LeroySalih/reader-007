@@ -133,7 +133,7 @@ export const Classes =  () => {
             
         });
 
-        console.log("Result", result);
+     //   console.log("Result", result);
         setClassAssignmentsByDueDate(result);
 
     }, [classAssignments, currentClass])
@@ -195,8 +195,8 @@ const Assignment = ({assignment, week}) => {
     const handleOpen = async () => {
         const {data, error} = await supabase.from("Assignments").select().eq("id", assignment[0].assignmentId)
 
-        data != undefined && console.log("data", data)
-        error != undefined && console.log("Assignemnt", assignment[0]);
+     //   data != undefined && console.log("data", data)
+        error != undefined && console.error("Assignemnt", assignment[0], error);
 
         setCounter(prev => prev + 1)
         setTooltipText(data[0]["dueDateTime"])
@@ -211,8 +211,9 @@ const Assignment = ({assignment, week}) => {
                 
                 <div>
                     {
-                        assignment.map(a => (<div>
+                        assignment.map((a, i) => (<div  key={i}>
                             <HtmlTooltip
+                               
                                 onOpen={handleOpen}
                                 title={
                                 <>
@@ -260,7 +261,7 @@ const Assignment = ({assignment, week}) => {
 
 
 const AssignmentsForClass = ({assignments, asc}) => {
-    console.log("Object.values(assignments)", Object.values(assignments))
+    // console.log("Object.values(assignments)", Object.values(assignments))
     return  <>
                 
                 <div>{Object.keys(assignments).map((a, i) => <Assignment key={i} week={a} assignment={assignments[a]}/>)}</div>

@@ -34,7 +34,7 @@ const ApplicationBar = () => {
         <AuthenticatedTemplate>
             <Link href="/admin"     ><a>Admin   </a></Link>
             <Link href="/weeklies"  ><a>Weeklies</a></Link>
-            <Link href="/sows"      ><a>SoW's </a></Link>
+            <Link href="/sows"      ><a>SoW&apos;s </a></Link>
             <Link href="/rubrics"   ><a>Rubrics </a></Link>
         </AuthenticatedTemplate>
     </div>

@@ -14,6 +14,7 @@ import { threeWeeksAgo, oneDayAgo, neverUpdated } from '../libs/spacetime';
 import { ContactSupportOutlined } from '@mui/icons-material';
 import { getPaginationItemUtilityClass } from '@mui/material';
 
+import { v4 as uuidv4 } from 'uuid';
 
 const getSubmissionsToBeUpdated = async () => {
 
@@ -57,24 +58,54 @@ const getPublishedPoints = (os) => {
     }
 }
 
+const getRubricId = (os) => {
+    try{
+        return os.filter(o =>o['@odata.type'] === "#microsoft.graph.educationRubricOutcome")[0]['id']
+    } catch (e) {
+        return null
+    }
+}
+
+const getRubricOutcomes = (os, ctx) => {
+    try{
+        console.log("os", os)
+        const rubricOutcome = os.filter(o =>o['@odata.type'] === "#microsoft.graph.educationRubricOutcome")[0]
+        return rubricOutcome['rubricQualitySelectedLevels']
+                 .map(ql => ({...ctx, ...ql}))
+    } catch (e) {
+        return null
+    }
+}
+
+
+
 const fetchOutcomesForSubmisison = async (instance, account, loginRequest, ctx) => {
 
     const outcomes = await fetchData(instance, account, loginRequest, {key: 'getOutcome', ...ctx})
+    let rubricOutcomes = null;
 
     // console.log("outcomes", outcomes)
 
-    const returnedOutcome = {
+    const outcomeId = uuidv4();
+
+    const outcome = {
+        
         classId: ctx.classId, 
         assignmentId: ctx.assignmentId,
         submissionId: ctx.submissionId,
         userId: ctx.userId,
         feedback : getFeedback(outcomes),
         points : getPoints(outcomes),
-        publishedPoints : getPublishedPoints(outcomes)
+        publishedPoints : getPublishedPoints(outcomes),
+        rubricId: getRubricId(outcomes)
     }
 
+    if (outcomes.length == 3){
+        rubricOutcomes = getRubricOutcomes(outcomes, ctx)
+        console.log("rubric outcomes", rubricOutcomes);
+    }
     
-    return returnedOutcome;
+    return {outcome, rubricOutcomes};
     
 }
 
@@ -149,7 +180,7 @@ const AdminOutcomesPage = () => {
 
         if (running){
             console.log("Setting Interval")
-            const t = setInterval( getNextSubmission, 500);
+            const t = setInterval( getNextSubmission, 200);
             setTimer(t)
         } else {
             console.log("Clearing Interval")
@@ -172,7 +203,7 @@ const AdminOutcomesPage = () => {
 
         const loadOutcomes = async () =>{
             
-            const outcome = await fetchOutcomesForSubmisison(instance, accounts[0], loginRequest, {
+            const {outcome, rubricOutcomes} = await fetchOutcomesForSubmisison(instance, accounts[0], loginRequest, {
                     submissionId: submission.id, 
                     classId: submission.classId, 
                     assignmentId: submission.assignmentId,
@@ -187,20 +218,37 @@ const AdminOutcomesPage = () => {
                 return;   
             }
             
-            // console.log("Writing Outcome to DB", outcome);
+            console.log("Writing Outcome to DB", outcome);
 
+            // write the points and feedback outcome
             const {data: writeData, error: writeError} = await supabase.from("Outcomes").upsert(outcome);
 
-            writeError && console.error(writeError);
+            writeError && console.error("Write Error", writeError, outcome);
 
+            // Write the rubric outcome
 
+            if (rubricOutcomes != null){
+                for (const ro of rubricOutcomes){
+
+                    console.log("Rubric Outcome", ro);
+    
+                    const {error} = await supabase.from("RubricOutcomes").upsert(ro);
+    
+                    error && console.error("Rubric Write Error", error, ro);
+    
+                }
+            }
+            
+            
+
+            // update the submission to show that it has had it's otucomes fetched.
             const {data: updateData, error: updateError} = await supabase.from("Submissions")
                                                                         .update({"outcomeLastUpdated" : spacetime().format("iso")})
                                                                         .eq("id", submission.id);
 
 
-            //updateError != undefined && console.error(updateError)
-            //updateData != undefined && console.log(updateData)
+            updateError != undefined && console.error(updateError)
+            updateData != undefined && console.log("Submissions Updated", updateData)
             
             // setCount(prev => prev + 1)
         }
