@@ -12,7 +12,7 @@ export const graphUrl = (ctx) => {
         case "getRubrics" : return `https://graph.microsoft.com/beta/education/me/rubrics`;
         case "getClassMembers" : return `https://graph.microsoft.com/v1.0/education/classes/${ctx.classId}/members`;
         case "getSubmissions" : return `https://graph.microsoft.com/beta/education/classes/${ctx.classId}/assignments/${ctx.assignmentId}/submissions`
-        case "getOutcomes" : return `https://graph.microsoft.com/beta/education/classes/${ctx.classId}/assignments/${ctx.assignmentId}/submissions/${ctx.submissionId}/outcomes`
+        case "getOutcome" : return `https://graph.microsoft.com/beta/education/classes/${ctx.classId}/assignments/${ctx.assignmentId}/submissions/${ctx.submissionId}/outcomes`
         default: console.error("Unknown key", ctx)
     }
     

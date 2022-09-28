@@ -9,19 +9,7 @@ import { useMsal } from '@azure/msal-react';
 import { loginRequest } from '../config';
 
 import Switch from '@mui/material/Switch';
-
-const threeWeeksAgo = spacetime()
-                            .subtract(3, "weeks")
-                            .weekStart("Sunday")
-                            .startOf("weeks")
-                            .format("iso");
-
-const oneDayAgo = spacetime()
-                            .subtract(1, "days")
-                            .format("iso");
-
-
-const neverUpdated = spacetime([2022, 0, 1]).format('iso');
+import { threeWeeksAgo, oneDayAgo, neverUpdated } from '../libs/spacetime';
 
 const getAllAssignments = async () => {
 
@@ -33,7 +21,7 @@ const getAllAssignments = async () => {
     // submissions
     const {data: assignments, error: assignmentsError} = await supabase
                 .from("Assignments")
-                .select("id, submissionLastUpdated, createdDateTime")
+                .select("id, classId, submissionLastUpdated, createdDateTime")
                 .gt(`createdDateTime`, threeWeeksAgo)
                 .lt(`submissionLastUpdated`, oneDayAgo)
                 // .and(`createdDateTime.gt.${threeWeeksAgo},submissionLastUpdated.lt.${oneDayAgo}`)
@@ -73,7 +61,8 @@ const AdminSubmissionsPage = () => {
 
     const getNextAssignment = async() => {
         
-            
+          
+        /*
         const {data: assignment, error: assignmentError} = await supabase
                                 .from("Assignments")
                                 .select("id, classId, submissionLastUpdated")
@@ -87,11 +76,21 @@ const AdminSubmissionsPage = () => {
 
         assignmentError != undefined && console.error(assignmentError)
 
-        setAssignment(assignment)
+        */
 
-        if (assignmentError){
+        if (assignments.length == 0){
+            console.log("assignents are empty.")
             setRunning(false)
+            setAssignment(null)
+            return 
         }
+
+        // get the next assignment from memory
+        console.log("Settign current assignment")
+        const nextAssignment = assignments.shift()
+        setAssignment(nextAssignment)
+        setAssignments(assignment)
+
 
     }
 
@@ -123,7 +122,7 @@ const AdminSubmissionsPage = () => {
 
         if (running){
             console.log("Setting Interval")
-            const t = setInterval( getNextAssignment, 2000);
+            const t = setInterval( getNextAssignment, 500);
             setTimer(t)
         } else {
             console.log("Clearing Interval")
@@ -141,7 +140,7 @@ const AdminSubmissionsPage = () => {
 
         console.log("Getting Submissions for assignment")
 
-        const loadSubmission = async () =>{
+        const loadSubmissions = async () =>{
             const subs = await fetchSubmissionsForAssignment(instance, accounts[0], loginRequest, {classId: assignment.classId, assignmentId: assignment.id});
             
             await subs.forEach(async (s) => {
@@ -162,15 +161,30 @@ const AdminSubmissionsPage = () => {
             // setCount(prev => prev + 1)
         }
 
-        loadSubmission()
+        loadSubmissions()
         setCount(prev => prev + 1)
 
     }, [assignment])
 
+    const clearSubmissions = async () => {
+
+        console.log("Deleting Submissions")
+        const {data: deleteResult, error: errorDelete} = await supabase.from('Submissions').delete().neq('id', 0)
+        errorDelete && console.error(errorDelete);
+
+        console.log("Resetting Assignments")
+        const {data: updateResult, error: errorResult} = await supabase.from('Assignments').update({submissionLastUpdated: neverUpdated}).neq('id', 0)
+        errorDelete && console.error(errorResult)
+
+        const allAssignmentsToBeUpdated = await getAllAssignments();
+        setAssignments(allAssignmentsToBeUpdated);
+    }
+
     return <>
+        {assignment && <h1>Current Assignemnt: {assignment.id}</h1>}
         {assignments && <h1>{count} of {assignments.length}</h1>}
-        <button onClick={getNextAssignment}>Next</button>
-        <div onChange={handleSwitchChange} value={running}>Running: <Switch></Switch></div>
+        <button onClick={clearSubmissions}>Clear Submissions</button>
+        <div >Running: <Switch onChange={handleSwitchChange} checked={running}></Switch></div>
         <pre>{assignment && JSON.stringify(assignment, null, 2)}</pre>
         <pre>{submissions && JSON.stringify(submissions, null, 2)}</pre>
         <pre>{JSON.stringify(assignments, null, 2)}</pre>
