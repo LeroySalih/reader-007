@@ -2,7 +2,7 @@ import {useRouter} from 'next/router'
 import { supabase } from '../../config/supabase';
 
 
-const AssignmentPage = ({assignment, levels, criteria}) => {
+const AssignmentPage = ({assignment, levels, criteria, rubricOutcomes}) => {
 
     const router = useRouter();
     
@@ -42,7 +42,7 @@ const AssignmentPage = ({assignment, levels, criteria}) => {
                             
                             <tr key={i}>
                                 <td>{Object.values(criteria)[0][0].qualityDescription}</td>
-                                {Object.values(criteria)[0].map((c, i) => <td key={i}>{c.description}</td>)}
+                                {Object.values(criteria)[0].map((c, i) => <td key={i}>{c.description}({c.count})</td>)}
                             </tr>
                             
                             )
@@ -51,9 +51,18 @@ const AssignmentPage = ({assignment, levels, criteria}) => {
         
                     </tbody>
                 </table>
+
+
+                
+
+                <h1>Assignment Rubric Information</h1>
                 <pre>{JSON.stringify(criteria, null, 2)}</pre>
-                <pre>{JSON.stringify(assignment, null, 2)}</pre>
+                
+                <h1>Levels Information</h1>
                 <pre>{JSON.stringify(levels, null, 2)}</pre>
+
+                {rubricOutcomes && <h1>Outcome Information{rubricOutcomes.length}</h1>}
+                <pre>{JSON.stringify(rubricOutcomes, null, 2)}</pre>
                 
                 
                 
@@ -91,6 +100,8 @@ export async function getServerSideProps(context) {
     const {data: criteria, error: criteriaError} = await supabase.from('AssignmentRubricQualityCriteria').select().eq('assignmentId', assignmentId);
     criteriaError != undefined && console.error("Error Levels", criteriaError);
 
+    const {data: rubricOutcomes, error: rubricError} = await supabase.from("RubricOutcomes").select().eq('assignmentId', assignmentId);
+    rubricError != undefined && console.error("Rubric Error", rubricError);
 
     const translateQualityCriteria = (criteria) => {
 
@@ -108,14 +119,47 @@ export async function getServerSideProps(context) {
 
     }
 
+    const addCounts = (criteria, levels, rubricOutcomes) => {
+
+        console.log("Criteria", criteria);
+
+        rubricOutcomes.forEach(ro => {
+            //console.log("ro", ro)
+            if (criteria[ro.qualityId] === undefined) {
+                console.error("Quality Id not found", ro.qualityId)
+
+            } else {
+                
+                if (ro.columnId != null) {
+                    const index = levels.map(l => l.levelId).indexOf(ro.columnId)
+                    index == -1 && console.log("Not Found", ro.columnId) 
+
+                    if (index != -1){
+                        criteria[ro.qualityId][index]['count'] === undefined ? criteria[ro.qualityId][index]['count'] = 0 : criteria[ro.qualityId][index]['count'] = criteria[ro.qualityId][index]['count'] + 1;
+                    }
+                }
+                
+                // criteria[ro.qualityId]['levelId']['count'] = criteria[ro.qualityId]['l']['count'] || 0;
+            }
+            
+        });
+
+        return criteria
+    }
+
     let qualityIds = Array.from(new Set( criteria.map(c => c.qualityId) ))
     
+    const newCriteria = addCounts(translateQualityCriteria(criteria), levels, rubricOutcomes);
+
+    console.log(newCriteria);
 
     return {
       props: {
         assignment, 
         levels,
-        criteria: translateQualityCriteria(criteria)
+        criteria: newCriteria,
+        rubricOutcomes
+
         }, 
     }
   }
