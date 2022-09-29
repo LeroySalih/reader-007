@@ -70,8 +70,9 @@ const getRubricOutcomes = (os, ctx) => {
     try{
         console.log("os", os)
         const rubricOutcome = os.filter(o =>o['@odata.type'] === "#microsoft.graph.educationRubricOutcome")[0]
+        console.log("Rubric Outcome",rubricOutcome)
         return rubricOutcome['rubricQualitySelectedLevels']
-                 .map(ql => ({...ctx, ...ql}))
+                 .map(ql => ({...ctx, ...ql }))
     } catch (e) {
         return null
     }

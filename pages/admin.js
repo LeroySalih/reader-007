@@ -32,15 +32,43 @@ const fetchMyAssignments = async (instance, account, loginRequest)  => {
 
     const assignments = await fetchData(instance, account, loginRequest, {key: "getAssignments"});
 
+    console.log("Assignments", assignments)
     return assignments.filter(a => a.createdDateTime > '2022-09-01');
 }
 
+const fetchRubricsForAssignment = async (instance, account, loginRequest, ctx) => {
+    
+    try{
+
+        const assignmentRubrics = await fetchData(instance, account, loginRequest, 
+            {
+                key: "getAssignmentRubrics", 
+                classId: ctx.classId, 
+                assignmentId: ctx.assignmentId
+            }
+            );
+
+        
+        
+        // console.log("Assignment Rubric Found:", assignmentRubrics)
+
+        return assignmentRubrics.hasOwnProperty('error') ? null : assignmentRubrics
+    } catch(e)
+    {
+        return null;
+    }
+    
+
+}
+
+/*
 const fetchAssignmentData = async (instance, account, loginRequest, ctx)  => {
 
     const assignments = await fetchData(instance, account, loginRequest, {key: "getAssignment", ...ctx});
 
     return assignments;
 }
+*/
 
 const fetchClassMembersForClass = async (instance, account, loginRequest, ctx) => {
 
@@ -308,11 +336,12 @@ const AdminPage = () => {
     // also doesn't support the delta api, so we need to call all and only process most recent (by default)
     const loadClassData = async () => {
         //console.log("Loading Class Data")
-        const result = await fetchClasses(instance, accounts[0])
+        const result = await fetchClasses(instance, accounts[0], loginRequest)
         
         // result.forEach(t => pushItemToQueue(msgTypes.class,  {classId: t.id}));
-
         await writeClassDataToDb(result)
+
+        
     }
 
     const loadAssignmentData = async () => {
@@ -332,6 +361,65 @@ const AdminPage = () => {
         console.log(`Fetched ${result.length} assignments from the database`)
               
         await writeAssignmentDataToDb(result)
+
+        console.log(`Result`, result)
+        for (const r of result){
+
+            const rubricResult = await fetchRubricsForAssignment(instance, accounts[0], loginRequest, {classId: r.classId, assignmentId:r.id});
+
+            if (rubricResult != null){
+                console.log("Writing Rubric Levels for Assignment", r.id);
+
+                
+                for (const index = 0; index < rubricResult.levels.length; index++) {
+                    
+                    const level = rubricResult.levels[index];
+                    // Write the rubric levels
+                    console.log("Level", level)
+                    const {data:writeLevelData, error: writeLevelError} = await supabase.from("AssignmentRubricLevels")
+                                                                                        .upsert({   assignmentId: r.id,
+                                                                                                    levelId: level.levelId,
+                                                                                                    index,
+                                                                                                    displayName: level.displayName
+                                                                                        });
+
+                    writeLevelError != undefined && console.error("Error", writeLevelError);
+                }
+
+                console.log("Writing Rubric Qualities for Assignment", r.id);
+            
+                for (const index = 0; index < rubricResult.qualities.length; index++) {
+                    
+                    const quality = rubricResult.qualities[index];
+                    // Write the rubric quality
+                    
+                    
+                    for (var criteriaIndex = 0; criteriaIndex < quality.criteria.length; criteriaIndex++){
+                        const criteria = quality.criteria[criteriaIndex]
+                        console.log("Quality Criteria", criteria)
+
+                        const {data:writeQualityData, error: writeQualityError} = await supabase.from("AssignmentRubricQualityCriteria")
+                                                                                        .upsert({   assignmentId: r.id,
+                                                                                                    qualityId: quality.qualityId,
+                                                                                                    index: criteriaIndex,
+                                                                                                    description: criteria.description.content,
+                                                                                                    qualityDescription: quality.description.content
+                                                                                        });
+
+                        writeQualityError != undefined && console.error("Error", writeQualityError);
+                    
+                    }
+                    /*
+                    */
+                }
+            }
+            
+        
+            // 0.5 sec delay to account for throttling
+            await new Promise(r => setTimeout(r, 1000));
+        }
+        
+        
 
         // Give the serve 1 sec to refresh
         setTimeout(async ()=> {

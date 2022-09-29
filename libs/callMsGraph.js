@@ -10,6 +10,8 @@ export const graphUrl = (ctx) => {
         case "getAssignments" : return `https://graph.microsoft.com/beta/education/me/assignments`;
         case "getAssignment" : return `https://graph.microsoft.com/beta/education/classes/${ctx.classId}/assignments/${ctx.assignmentId}`;
         case "getRubrics" : return `https://graph.microsoft.com/beta/education/me/rubrics`;
+        case "getAssignmentRubrics" : return `https://graph.microsoft.com/beta/education/classes/${ctx.classId}/assignments/${ctx.assignmentId}/rubric`
+        
         case "getClassMembers" : return `https://graph.microsoft.com/v1.0/education/classes/${ctx.classId}/members`;
         case "getSubmissions" : return `https://graph.microsoft.com/beta/education/classes/${ctx.classId}/assignments/${ctx.assignmentId}/submissions`
         case "getOutcome" : return `https://graph.microsoft.com/beta/education/classes/${ctx.classId}/assignments/${ctx.assignmentId}/submissions/${ctx.submissionId}/outcomes`
