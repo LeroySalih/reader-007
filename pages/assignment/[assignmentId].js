@@ -1,21 +1,39 @@
 import {useRouter} from 'next/router'
 import { supabase } from '../../config/supabase';
 
+import { styled } from '@mui/material/styles';
+import Tooltip, { tooltipClasses } from '@mui/material/Tooltip';
 
-const AssignmentPage = ({assignment, levels, criteria, rubricOutcomes}) => {
+const LightTooltip = styled(({ className, ...props }) => (
+    <Tooltip {...props} classes={{ popper: className }} />
+  ))(({ theme }) => ({
+    [`& .${tooltipClasses.tooltip}`]: {
+      backgroundColor: theme.palette.common.white,
+      color: 'rgba(0, 0, 0, 0.87)',
+      boxShadow: theme.shadows[1],
+      fontSize: 11,
+    },
+  }));
+
+const AssignmentPage = ({assignment, levels, criteria, rubricOutcomes, groupedOutcomes, users}) => {
 
     const router = useRouter();
     
     // const {assignmentId} = router.query 
-
-    console.log("Assignment", assignment);
-
     if (!assignment)
         return <div>Loading</div>
 
 
-    
-
+    const setBackgroundColor = (levelIndex, levels) => {
+        console.log("levelIndex", levelIndex, "levels", levels, levelIndex == (levels.length - 1))
+        if (levelIndex == 0)
+            return 'green'
+            
+        if (levelIndex == (levels.length - 1))
+            return 'red'
+            
+        return "yellow"
+    }
    
 
     return <>
@@ -37,7 +55,7 @@ const AssignmentPage = ({assignment, levels, criteria, rubricOutcomes}) => {
                             }
                         </tr>
                        
-                        {console.log("Criteria", criteria) }
+                        
                         {
                             Object.values(criteria).map((c, i) => 
                             
@@ -47,7 +65,7 @@ const AssignmentPage = ({assignment, levels, criteria, rubricOutcomes}) => {
 
                                 {/* Loop through qualities for each row */}
                                 {
-                                    c.map(cell => <td>{cell.description} , {cell.count}</td>)
+                                    c.map((cell, i) => <td key={i}>{cell.description} , {cell.count}</td>)
         
                                 }
                                 
@@ -60,17 +78,53 @@ const AssignmentPage = ({assignment, levels, criteria, rubricOutcomes}) => {
                     </tbody>
                 </table>
 
-
                 
-
-                <h1>Assignment Rubric Information</h1>
-                <pre>{JSON.stringify(criteria, null, 2)}</pre>
                 
-                <h1>Levels Information</h1>
-                <pre>{JSON.stringify(levels, null, 2)}</pre>
+                
+               
 
-                {rubricOutcomes && <h1>Outcome Information{rubricOutcomes.length}</h1>}
-                <pre>{JSON.stringify(rubricOutcomes, null, 2)}</pre>
+
+                <div>
+                    <table>
+                        <tbody>
+                                    <tr>
+                                         <th></th>   
+                                         
+                                         {
+                                            Object.values(criteria)
+                                                    .sort((a, b) => {console.log(`Sorting ${a[0].qualityId} ${b[0].qualityId}`); return a[0].qualityId > b[0].qualityId ? 1 : -1})
+                                                    .map((c, i) => 
+                                            <th key={i} className="pupilQualityHeader">
+                                                <Tooltip title={c[0].qualityId}>
+                                                    <span>{c[0].qualityDescription}</span>
+                                                </Tooltip>
+                                                {/* <div>{JSON.stringify(c[0].qualityId, null, 2)}</div> */}
+                                            </th>)
+                                         }
+                                    </tr>
+                    {groupedOutcomes && Object.values(groupedOutcomes).map((g,i) => (
+                        
+                            
+                                    <tr key={i}>
+                                        <td className="pupil">{users && users[g[0].userId] && `${users[g[0].userId].surname}, ${users[g[0].userId].givenName}`}</td>
+                                        
+                                        {
+                                            g.sort((a, b) => a.qualityId > b.qualityId ? 1 : -1)
+                                             .map((c,i) => <td key={c.qualityId} className={`pupil-score ${setBackgroundColor(c.columnIndex, levels)}`} >
+                                                                <Tooltip title={c.qualityId}><span>{/*c.columnIndex*/}&nbsp;</span></Tooltip>
+                                                            </td>)
+                                        }
+
+                                    </tr>
+                                
+                       
+                    ))
+                    }
+                        </tbody>
+                    </table>
+                            
+                </div>
+                
                 
                 
                 
@@ -88,6 +142,36 @@ const AssignmentPage = ({assignment, levels, criteria, rubricOutcomes}) => {
             border-bottom: solid 1px silver;
         }
 
+
+        .pupilQualityHeader {
+            color: black;
+            font-size: 0.6rem;
+        }
+
+
+        .pupil{
+            color: black;
+            font-size: 0.6rem;
+        }
+
+
+        .pupil-score {
+            color: black;
+            font-size: 0.6rem;
+        }
+
+        .green {
+            background-color : #3d9f1d;
+
+        }
+
+        .yellow {
+            background-color : #e2e515;
+        }
+
+        .red {
+            background-color : #ad2525;
+        }
         `}
         </style>
     </>
@@ -111,6 +195,9 @@ export async function getServerSideProps(context) {
     const {data: rubricOutcomes, error: rubricError} = await supabase.from("RubricOutcomes").select().eq('assignmentId', assignmentId);
     rubricError != undefined && console.error("Rubric Error", rubricError);
 
+    const {data: users, error: userError} = await supabase.from("Users").select()
+    userError != undefined && console.error("User Error", users)
+
     const translateQualityCriteria = (criteria) => {
 
         
@@ -127,9 +214,11 @@ export async function getServerSideProps(context) {
 
     }
 
-    const addCounts = (criteria, levels, rubricOutcomes) => {
+    const columnIdToIndex = (columnId) => {
+        return columnId == null ? null : levels.findIndex(l => l.levelId == columnId)
+    }
 
-        console.log("Criteria", criteria);
+    const addCounts = (criteria, levels, rubricOutcomes) => {
 
         rubricOutcomes.forEach(ro => {
             //console.log("ro", ro)
@@ -143,6 +232,7 @@ export async function getServerSideProps(context) {
                     index == -1 && console.log("Not Found", ro.columnId) 
 
                     if (index != -1){
+                        // Add Counts of times each column occures.
                         criteria[ro.qualityId][index]['count'] === undefined ? criteria[ro.qualityId][index]['count'] = 0 : criteria[ro.qualityId][index]['count'] = criteria[ro.qualityId][index]['count'] + 1;
                     }
                 }
@@ -155,19 +245,36 @@ export async function getServerSideProps(context) {
         return criteria
     }
 
+    const groupedOutcomes = (rubricOutcomes, levels) => {
+    //     return rubricOutcomes;
+        return rubricOutcomes.reduce((group, outcome) => {
+            group[outcome.userId] = group[outcome.userId] || [];
+            group[outcome.userId].push(
+                {   userId : outcome.userId, 
+                    qualityId : outcome.qualityId, 
+                    columnId : outcome.columnId,
+                    columnIndex : columnIdToIndex(outcome.columnId)
+                }) ;
+            return group;
+        }, {})
+    }
+
     let qualityIds = Array.from(new Set( criteria.map(c => c.qualityId) ))
     
     const newCriteria = addCounts(translateQualityCriteria(criteria), levels, rubricOutcomes);
 
-    console.log(newCriteria);
+    const groupedUsers = users.reduce((group, user) => { group[user.id] = user; return group }, {})
+
+    // console.log("Grouped Users", groupedUsers);
 
     return {
       props: {
         assignment, 
         levels,
         criteria: newCriteria,
-        rubricOutcomes
-
+        rubricOutcomes : rubricOutcomes,
+        groupedOutcomes: groupedOutcomes(rubricOutcomes, levels), 
+        users : groupedUsers
         }, 
     }
   }
