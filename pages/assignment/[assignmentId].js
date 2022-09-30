@@ -37,12 +37,20 @@ const AssignmentPage = ({assignment, levels, criteria, rubricOutcomes}) => {
                             }
                         </tr>
                        
+                        {console.log("Criteria", criteria) }
                         {
                             Object.values(criteria).map((c, i) => 
                             
                             <tr key={i}>
-                                <td>{Object.values(criteria)[0][0].qualityDescription}</td>
-                                {Object.values(criteria)[0].map((c, i) => <td key={i}>{c.description}({c.count})</td>)}
+                                {/* Get the QUality Description from the first item */}
+                                <td>{Object.values(criteria)[i][0].qualityDescription}</td>
+
+                                {/* Loop through qualities for each row */}
+                                {
+                                    c.map(cell => <td>{cell.description} , {cell.count}</td>)
+        
+                                }
+                                
                             </tr>
                             
                             )
