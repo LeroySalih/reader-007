@@ -22,8 +22,8 @@ const NoWorkSubmitted = ({query, data}) => {
                     
                       Object.keys(groupedPupils).map((k, i) => ( 
                         [
-                        <tr><td>{k}</td></tr>, 
-                        <tr>
+                        <tr key={`$A${i}`}><td>{k}</td></tr>, 
+                        <tr key={`$B${i}`}>
                             <td>{groupedPupils[k].assignmentTitle}</td>
                             <td>{groupedPupils[k].givenname}</td>
                             <td>{groupedPupils[k].surname}</td>
