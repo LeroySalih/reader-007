@@ -9,11 +9,12 @@ import MenuIcon from '@mui/icons-material/Menu';
 import Button from '@mui/material/Button';
 import Menu from '@mui/material/Menu';
 import MenuItem from '@mui/material/MenuItem';
-
+import spacetime from 'spacetime';
 
 import Link from 'next/link'
 
 import { AuthenticatedTemplate, UnauthenticatedTemplate, useMsal } from "@azure/msal-react";
+
 
 
 const ApplicationBar = () => {
@@ -28,10 +29,19 @@ const ApplicationBar = () => {
         instance.loginRedirect().catch(e => console.error(e))
     }
 
-    const reportMenuOptions = [
+    const adminMenuOptions = [
         {label: 'Admin', href: '/admin'},
         {label: 'Submissions', href: '/admin-submissions'},
         {label: 'Outcomes', href: '/admin-outcomes'}
+    ]
+
+    const reportsMenuOptions = [
+        {label: 'Scheme of Work', href: '/sows'},
+        {label: 'Weeklies', href: '/weeklies'},
+        {label: 'Rubrics', href: '/rubrics'},
+        {label: `No Work Submitted for ${spacetime().startOf('day').subtract(1,'days').format('yyyy-MMM-dd')}`, href : `/no_work_submitted/${spacetime().startOf('day').subtract(1,'days').format('yyyy-MMM-dd')}`},
+        {label: `No Work Submitted for ${spacetime().startOf('day').subtract(8,'days').format('yyyy-MMM-dd')}`, href : `/no_work_submitted/${spacetime().startOf('day').subtract(8,'days').format('yyyy-MMM-dd')}`}
+
     ]
 
     return (<>
@@ -46,12 +56,9 @@ const ApplicationBar = () => {
         
         <AuthenticatedTemplate>
             <div style={{"display": "flex", "flexDirection" : "row"}}>
-            <Link href="/"><a>Home</a></Link>
-            <Link href="/admin"     ><a>Admin   </a></Link>
-            <Link href="/weeklies"  ><a>Weeklies</a></Link>
-            <Link href="/sows"      ><a>SoW&apos;s </a></Link>
-            <Link href="/rubrics"   ><a>Rubrics </a></Link>
-            <BasicMenu label={'Reports'} options={reportMenuOptions}/>
+            <Link href="/"><Button color="neutral" label={'Admin'} >Home</Button></Link>
+            <BasicMenu label={'Admin'} options={adminMenuOptions}/>
+            <BasicMenu label={'Reports'} options={reportsMenuOptions}/>
             </div>
         </AuthenticatedTemplate>
     </div>
@@ -83,6 +90,7 @@ export default ApplicationBar;
 
 
 function BasicMenu({label, options}) {
+
   const [anchorEl, setAnchorEl] = React.useState(null);
   const open = Boolean(anchorEl);
   const handleClick = (event) => {
@@ -92,12 +100,11 @@ function BasicMenu({label, options}) {
     setAnchorEl(null);
   };
 
-  console.log(options)
 
   return (
     <div>
       <Button
-        color="secondary"
+        color="neutral"
         id="basic-button"
         aria-controls={open ? 'basic-menu' : undefined}
         aria-haspopup="true"

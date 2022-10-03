@@ -10,26 +10,43 @@ const NoWorkSubmitted = ({query, data}) => {
                               group[pupil.classname] = group[pupil.classname] || []
                               group[pupil.classname].push(pupil)
                               return group;
-                            })
+                            }, {})
 
     return <>
-    { query && <h1>No Work Submitted from: {query.from} to {query.to}</h1>}
     
+    
+    { query && <h1>No Work Submitted from: {query.from} to {query.to}</h1>}
+    { !groupedPupils && <h1>Loading.</h1>}
+   
+    <div className="layout">
     {
-      data && <table>
+      groupedPupils && <h3>Found data for {Object.keys(groupedPupils).length} classes</h3>
+    }
+    {
+      groupedPupils && <table>
                 <tbody>
+                  <tr className="header">
+                    
+                    <th>Assignment</th>
+                    <th>Name</th>
+                    <th>Comment</th>
+                    <th>Points</th>
+                  </tr>
                   {
                     
                       Object.keys(groupedPupils).map((k, i) => ( 
                         [
-                        <tr key={`$A${i}`}><td>{k}</td></tr>, 
+                        <tr key={`$A${i}`} className="startClass"><td className="classTitle">{k}</td></tr>, 
+                        groupedPupils[k].map((r,i) => 
                         <tr key={`$B${i}`}>
-                            <td>{groupedPupils[k].assignmentTitle}</td>
-                            <td>{groupedPupils[k].givenname}</td>
-                            <td>{groupedPupils[k].surname}</td>
-                            <td>{groupedPupils[k].feedback}</td>
-                            <td>{groupedPupils[k].points}</td>
-                        </tr>
+                          <td>{r.assignmentname}</td>
+                          <td className='pupilName'>{r.givenname} {r.surname}</td>
+                          <td>{r.feedback}</td>
+                          <td>{r.points}</td>
+                          
+                        </tr>)
+                        
+
                         ]
                       )
                       )
@@ -37,6 +54,45 @@ const NoWorkSubmitted = ({query, data}) => {
                 </tbody>
               </table>
     }
+    </div>
+
+    <style jsx="true">{`
+
+      .layout {
+        width : 80vw;
+        margin : auto;
+        display : flex;
+        flex-direction : column;
+        justify-content: center;
+      }
+
+      .header {
+        border : solid 1px silver;
+      }
+
+      .startClass {
+        border : solid 1px silver;
+      }
+
+      table {
+        border-spacing: 50px 0;
+      }
+
+      td {
+        font-family : Verdana;
+        font-size: 0.7rem;
+        line-height: 1.2rem;
+      }
+
+      .classTitle {
+        font-weight : 800;
+      }
+
+      .pupilName {
+        font-weight : 800;
+      }
+    
+    `}</style>
     
     </>
 }
