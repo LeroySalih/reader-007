@@ -259,8 +259,27 @@ const AdminOutcomesPage = () => {
 
     }, [submission])
     
+    const handleResubmit = async () => {
+        
+        console.log("Resetting Submissions")
+
+        const {data: resetData, error: resetError} = await supabase
+            .from("Submissions")
+            .update({"outcomeLastUpdated" : neverUpdated})
+            .neq("id", 0);
+        
+        resetError != undefined && console.error("Reset Error", resetError);
+
+        const subs = await getSubmissionsToBeUpdated()
+            
+        setSubmissions(subs)
+
+        console.log("Done.")
+
+    }
     return <>
         { submissions && <h1>{submissions.length} remaining</h1> }
+        <button onClick={handleResubmit}>Reset Submissions</button>
         { submission && <h3>{submission.id}</h3>}
         { /*<button onClick={getNextAssignment}>Next</button> */}
         <div >Running: <Switch onChange={handleSwitchChange} checked={running}></Switch></div>

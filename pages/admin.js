@@ -484,7 +484,7 @@ const AdminPage = () => {
         const {data: classes, error: classesError} = await supabase.from("Classes").select();
         const {data: currentUsers, error: usersError} = await supabase.from("Users").select();
 
-        const userIds = currentUsers.map(u => i.id);
+        const userIds = currentUsers.map(u => u.id);
 
         let allClasses = []
 
