@@ -26,7 +26,7 @@ const AssignmentPage = ({assignment, levels, criteria, rubricOutcomes, groupedOu
 
 
     const setBackgroundColor = (levelIndex, levels) => {
-        console.log("levelIndex", levelIndex, "levels", levels, levelIndex == (levels.length - 1))
+        // console.log("levelIndex", levelIndex, "levels", levels, levelIndex == (levels.length - 1))
         if (levelIndex == 0)
             return 'green'
             
@@ -36,7 +36,7 @@ const AssignmentPage = ({assignment, levels, criteria, rubricOutcomes, groupedOu
         return "yellow"
     }
    
-    console.log("Class Name", classData)
+    // console.log("Class Name", classData)
 
     return <>
         <div className="pageLayout">
@@ -62,7 +62,9 @@ const AssignmentPage = ({assignment, levels, criteria, rubricOutcomes, groupedOu
 
                                 {/* Loop through qualities for each row */}
                                 {
-                                    c.map((cell, i) => <td key={i} className="level"><div>{cell.description}</div> <div className="pupilCount">{cell.count}</div></td>)
+                                    c.map((cell, i) => <td key={i} className="level">
+                                            <div>{cell.description}</div> 
+                                            <div className="pupilCount">{cell.count}</div></td>)
         
                                 }
                                 
@@ -87,7 +89,9 @@ const AssignmentPage = ({assignment, levels, criteria, rubricOutcomes, groupedOu
                                          
                                          {
                                             Object.values(criteria)
-                                                    .sort((a, b) => {console.log(`Sorting ${a[0].qualityId} ${b[0].qualityId}`); return a[0].qualityId > b[0].qualityId ? 1 : -1})
+                                                    .sort((a, b) => {
+                                                        //console.log(`Sorting ${a[0].qualityId} ${b[0].qualityId}`); 
+                                                        return a[0].qualityId > b[0].qualityId ? 1 : -1})
                                                     .map((c, i) => 
                                             <th key={i} className="pupilQualityHeader">
                                                 <Tooltip title={c[0].qualityId}>
@@ -142,6 +146,8 @@ const AssignmentPage = ({assignment, levels, criteria, rubricOutcomes, groupedOu
             border-radius: 0.5rem;
             margin: 1rem;
             padding: 1rem;
+            display:flex;
+            flex-direction: row;
         }
 
         .pageLayout {
@@ -201,9 +207,19 @@ const AssignmentPage = ({assignment, levels, criteria, rubricOutcomes, groupedOu
 
 export default AssignmentPage;
 
-export async function getServerSideProps(context) {
 
-    const {assignmentId} = context.query;
+export async function getStaticPaths() {
+    return {
+      paths: [{ params: { assignmentId: '5bd4eb36-ba95-48a3-aabc-12b5341d4209' } }
+        ],
+      fallback: false, // can also be true or 'blocking'
+    }
+  }
+
+export async function getStaticProps(context) {
+
+    const {assignmentId} = context.params;
+    console.log("Assignment Id", assignmentId)
 
     const {data: assignment, error} = await supabase.from('Assignments').select().eq('id', assignmentId).maybeSingle();
     error != undefined && console.error("Assignment Error", error);
@@ -221,7 +237,7 @@ export async function getServerSideProps(context) {
     userError != undefined && console.error("User Error", users)
 
     const {data: classData, error: classError} = await supabase.from("Classes").select().eq("id", assignment.classId).maybeSingle()
-    console.log(classData, assignment)
+    // console.log(classData, assignment)
     classError != undefined && console.error("Class Error", classError);
 
 
@@ -299,10 +315,11 @@ export async function getServerSideProps(context) {
         assignment, 
         levels,
         criteria: newCriteria,
-        rubricOutcomes : rubricOutcomes,
+        // rubricOutcomes : rubricOutcomes,
         groupedOutcomes: groupedOutcomes(rubricOutcomes, levels), 
         users : groupedUsers,
         classData
         }, 
     }
   }
+
