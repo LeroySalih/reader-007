@@ -3,6 +3,7 @@ import { supabase } from '../../config/supabase';
 
 import { styled } from '@mui/material/styles';
 import Tooltip, { tooltipClasses } from '@mui/material/Tooltip';
+import { UndoRounded } from '@mui/icons-material';
 
 const LightTooltip = styled(({ className, ...props }) => (
     <Tooltip {...props} classes={{ popper: className }} />
@@ -15,7 +16,7 @@ const LightTooltip = styled(({ className, ...props }) => (
     },
   }));
 
-const AssignmentPage = ({assignment, levels, criteria, rubricOutcomes, groupedOutcomes, users}) => {
+const AssignmentPage = ({assignment, levels, criteria, rubricOutcomes, groupedOutcomes, users, classData}) => {
 
     const router = useRouter();
     
@@ -35,12 +36,13 @@ const AssignmentPage = ({assignment, levels, criteria, rubricOutcomes, groupedOu
         return "yellow"
     }
    
+    console.log("Class Name", classData)
 
     return <>
         <div className="pageLayout">
             <header>
-                <h1>Assignment {assignment.displayName}</h1> 
-                <table>
+                <h1>{classData && classData.displayName} :: {assignment.displayName}</h1> 
+                <table width="100%" style={{marginBottom:"3rem"}}>
                     <tbody>
                         <tr>
                             <td>Description</td>
@@ -48,12 +50,7 @@ const AssignmentPage = ({assignment, levels, criteria, rubricOutcomes, groupedOu
                                 levels.map((l, i) => <td key={i}>{l.displayName}</td>)
                             }
                         </tr>
-                        <tr>
-                            <td></td>
-                            {
-                                levels.map((l, i) => <td key={i}>{l.levelId}</td>)
-                            }
-                        </tr>
+                        
                        
                         
                         {
@@ -61,11 +58,11 @@ const AssignmentPage = ({assignment, levels, criteria, rubricOutcomes, groupedOu
                             
                             <tr key={i}>
                                 {/* Get the QUality Description from the first item */}
-                                <td>{Object.values(criteria)[i][0].qualityDescription}</td>
+                                <td className="description">{Object.values(criteria)[i][0].qualityDescription}</td>
 
                                 {/* Loop through qualities for each row */}
                                 {
-                                    c.map((cell, i) => <td key={i}>{cell.description} , {cell.count}</td>)
+                                    c.map((cell, i) => <td key={i} className="level"><div>{cell.description}</div> <div className="pupilCount">{cell.count}</div></td>)
         
                                 }
                                 
@@ -73,8 +70,6 @@ const AssignmentPage = ({assignment, levels, criteria, rubricOutcomes, groupedOu
                             
                             )
                         }
-                        
-        
                     </tbody>
                 </table>
 
@@ -84,7 +79,7 @@ const AssignmentPage = ({assignment, levels, criteria, rubricOutcomes, groupedOu
                
 
 
-                <div>
+                <div className="pupilRubric">
                     <table>
                         <tbody>
                                     <tr>
@@ -110,8 +105,8 @@ const AssignmentPage = ({assignment, levels, criteria, rubricOutcomes, groupedOu
                                         
                                         {
                                             g.sort((a, b) => a.qualityId > b.qualityId ? 1 : -1)
-                                             .map((c,i) => <td key={c.qualityId} className={`pupil-score ${setBackgroundColor(c.columnIndex, levels)}`} >
-                                                                <Tooltip title={c.qualityId}><span>{/*c.columnIndex*/}&nbsp;</span></Tooltip>
+                                             .map((c,i) => <td key={c.qualityId}  >
+                                                                <div className={`pupil-score ${setBackgroundColor(c.columnIndex, levels)}`}>&nbsp;</div>
                                                             </td>)
                                         }
 
@@ -131,7 +126,24 @@ const AssignmentPage = ({assignment, levels, criteria, rubricOutcomes, groupedOu
             </header>
         </div>
         <style jsx="true">{`
+
+        .description {
+            font-size: 0.9rem;
+        }
         
+        .pupilCount {
+            text-align : right;
+        }
+
+        .level {
+            font-size : 0.8rem;
+            border : silver solid 1px;
+            height: 3rem;
+            border-radius: 0.5rem;
+            margin: 1rem;
+            padding: 1rem;
+        }
+
         .pageLayout {
                 width : 80vw;
                 margin : auto;
@@ -148,6 +160,10 @@ const AssignmentPage = ({assignment, levels, criteria, rubricOutcomes, groupedOu
             font-size: 0.6rem;
         }
 
+        pupilRubric {
+
+        }
+
 
         .pupil{
             color: black;
@@ -158,6 +174,8 @@ const AssignmentPage = ({assignment, levels, criteria, rubricOutcomes, groupedOu
         .pupil-score {
             color: black;
             font-size: 0.6rem;
+            height: 1.4rem;
+            border-radius : 1rem;;
         }
 
         .green {
@@ -171,6 +189,10 @@ const AssignmentPage = ({assignment, levels, criteria, rubricOutcomes, groupedOu
 
         .red {
             background-color : #ad2525;
+        }
+
+        .pill {
+
         }
         `}
         </style>
@@ -197,6 +219,11 @@ export async function getServerSideProps(context) {
 
     const {data: users, error: userError} = await supabase.from("Users").select()
     userError != undefined && console.error("User Error", users)
+
+    const {data: classData, error: classError} = await supabase.from("Classes").select().eq("id", assignment.classId).maybeSingle()
+    console.log(classData, assignment)
+    classError != undefined && console.error("Class Error", classError);
+
 
     const translateQualityCriteria = (criteria) => {
 
@@ -274,7 +301,8 @@ export async function getServerSideProps(context) {
         criteria: newCriteria,
         rubricOutcomes : rubricOutcomes,
         groupedOutcomes: groupedOutcomes(rubricOutcomes, levels), 
-        users : groupedUsers
+        users : groupedUsers,
+        classData
         }, 
     }
   }

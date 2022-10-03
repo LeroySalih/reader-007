@@ -7,6 +7,8 @@ import Tooltip, { tooltipClasses } from '@mui/material/Tooltip';
 
 
 import { styled } from '@mui/material/styles';
+import Image from 'next/image';
+import Link from 'next/link';
 
 const LightTooltip = styled(({ className, ...props }) => (
     <Tooltip {...props} classes={{ popper: className }} />
@@ -209,9 +211,9 @@ const Assignment = ({assignment, week}) => {
     return <><div className="display">
                 <div className="weekTitle">{week}</div>
                 
-                <div>
+                <div >
                     {
-                        assignment.map((a, i) => (<div  key={i}>
+                        assignment.map((a, i) => (<div  key={i} className="titleBlock">
                             <HtmlTooltip
                                
                                 onOpen={handleOpen}
@@ -225,8 +227,15 @@ const Assignment = ({assignment, week}) => {
                                 }
                             >
                                 
-                                <a href={a.webUrl} className="assignmentTitle">{a.assignmentTitle}</a>
+                                <Link href={`/assignment/${a.assignmentId}`} className="assignmentTitle"><span>{a.assignmentTitle}</span></Link>
+                               
                             </HtmlTooltip>
+                            
+                            <Link href={a.webUrl} target="_new">
+                                <img className="imageLink" width="30px" height="30px" src="/images/teams-logo.png">
+                                </img>
+                            </Link>
+                            
                             
                             </div>))
                     }
@@ -235,6 +244,29 @@ const Assignment = ({assignment, week}) => {
             </div>
             <style jsx="true">{`
 
+                    .titleBlock {
+                        display: flex;
+                        align-items: center;
+                    }
+
+                    .imageLink {
+                        cursor: pointer;
+                        margin-left: 2rem;
+                        filter: saturate(0%);
+                        opacity: 30%
+                        
+                    }
+
+                    .imageLink:hover {
+                        cursor: pointer;
+                        margin-left: 2rem;
+                        border: silver 1px solid;
+                        border-radius : 25%;
+                        filter: saturate(100%);
+                        opacity: 100%;
+                        
+                    }
+
                     .assignmentTitle {
                         pointer : cursor;
                     }
@@ -242,6 +274,8 @@ const Assignment = ({assignment, week}) => {
                     .weekTitle {
                         font-weight : 800;
                         padding-right: 2rem;
+                        display: flex;
+                        align-items: center;
                     }
 
                     .display {

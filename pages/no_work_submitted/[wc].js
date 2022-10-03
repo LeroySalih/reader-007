@@ -20,7 +20,7 @@ const NoWorkSubmitted = ({query, data}) => {
    
     <div className="layout">
     {
-      groupedPupils && <h3>Found data for {Object.keys(groupedPupils).length} classes</h3>
+      groupedPupils && <h3>Found data for {Object.keys(groupedPupils).length} classes for {JSON.stringify(query, null, 2)}</h3>
     }
     {
       groupedPupils && <table>
@@ -106,8 +106,6 @@ export default NoWorkSubmitted
 
 export async function getServerSideProps(context) {
 
-    console.log("Context", context.params);
-
     const {wc} = context.params
 
     let { data, error } = await supabase.rpc('get_no_work_submitted', {
@@ -115,8 +113,8 @@ export async function getServerSideProps(context) {
           ito: spacetime(wc).add(7,"days").format('iso')
         });
 
-if (error) console.error(error)
-else console.log(data)
+    if (error) console.error(error)
+    else console.log(data)
     
     return {
       props: {
