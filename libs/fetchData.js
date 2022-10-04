@@ -9,7 +9,7 @@ export const fetchData = async (instance, account, loginRequest, context)  => {
 
 
     const url = await getUrlFromContext(context)
-    //console.log("URL From Context is:", url)
+    console.log("URL From Context is:", url)
   
     
     // Load Classes Data

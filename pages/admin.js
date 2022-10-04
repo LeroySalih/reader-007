@@ -30,10 +30,18 @@ const fetchClasses = async (instance, account, loginRequest)  => {
 
 const fetchMyAssignments = async (instance, account, loginRequest)  => {
 
-    const assignments = await fetchData(instance, account, loginRequest, {key: "getAssignments"});
+  try {
+    const assignments = (await fetchData(instance, account, loginRequest, {key: "getAssignments"})) || [];
 
-    console.log("Assignments", assignments)
+    console.log(`Fetched ${assignments.length} Assignments from Graph`)
+
     return assignments.filter(a => a.createdDateTime > '2022-09-01');
+    
+  } catch(e) {
+    console.error("fetchMyAssignments", e)
+    return null;
+  }
+    
 }
 
 const fetchRubricsForAssignment = async (instance, account, loginRequest, ctx) => {
@@ -126,7 +134,7 @@ const getPointsFromOutcome = (o) => {
 
     const outcome = o.filter(o => o['@odata.type'] === "#microsoft.graph.educationPointsOutcome") 
 
-    console.log("Max Points", o);
+    // console.log("Max Points", o);
 
     return outcome.length == 1 ? outcome[0].points.points : null;
     
@@ -197,7 +205,7 @@ const writeClassDataToDb = async (classData) => {
         .from("Classes")
         .upsert(c)
 
-        data !== undefined && console.log("Data", data)
+       // data !== undefined && console.log("Data", data)
         error !== undefined && console.error("Error", error)
       })
       
@@ -384,6 +392,13 @@ const AdminPage = () => {
                                                                                         });
 
                     writeLevelError != undefined && console.error("Error", writeLevelError);
+
+                    const {data: updateData, error: updateError} = await supabase.from("Assignments")
+                                                                                 .update({"hasRubric": true})
+                                                                                 .eq("id", r.id);
+
+                    updateError != undefined && console.error("Update Error", updateError)
+
                 }
 
                 console.log("Writing Rubric Qualities for Assignment", r.id);

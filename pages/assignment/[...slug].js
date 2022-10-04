@@ -39,10 +39,13 @@ const AssignmentPage = ({assignment, levels, criteria, rubricOutcomes, groupedOu
    
     // console.log("Class Name", classData)
 
+    const userName = (users && Object.values(users)[0] && Object.values(users)[0].givenName || "Unknown Name") + (users && Object.values(users)[0] && Object.values(users)[0].surname || "")
     return <>
         <div className="pageLayout">
             <header>
-                <h1>{classData && classData.displayName} :: {assignment.displayName}</h1> 
+                <h1>{classData && classData.displayName} :: <Link href={`/assignment/${assignment.id}`}><span>{assignment.displayName}</span></Link> </h1>
+                <h2>For {userName}</h2> 
+               
                 <table width="100%" style={{marginBottom:"3rem"}}>
                     <tbody>
                         <tr>
@@ -63,10 +66,10 @@ const AssignmentPage = ({assignment, levels, criteria, rubricOutcomes, groupedOu
 
                                 {/* Loop through qualities for each row */}
                                 {
-                                    c.map((cell, i) => <td key={i} className="level-detail">
+                                    c.map((cell, i) => <td key={i} className={`level-detail ${cell.count == 0 ? 'green' : 'blank'}`}>
                                             <div className="level-pupil-details">
                                                 <div className="level-pupil-details-description">{cell.description}</div> 
-                                                <div className="level-pupil-details-count">{cell.count}</div></div>
+                                                <div className={`level-pupil-details-count `}>&nbsp;</div></div>
                                             </td>
                                             )
 
@@ -110,13 +113,7 @@ const AssignmentPage = ({assignment, levels, criteria, rubricOutcomes, groupedOu
                         
                             
                                     <tr key={i}>
-                                        <td className="pupil">
-                                            {users && users[g[0].userId] && assignment && <Link href={`/assignment/${assignment.id}/${users[g[0].userId].id}`}>
-                                                                                <span>
-                                                                                    {`${users[g[0].userId].surname}, ${users[g[0].userId].givenName}`}
-                                                                                </span>
-                                                                            </Link>}
-                                        </td>
+                                        <td className="pupil">{users && users[g[0].userId] && `${users[g[0].userId].surname}, ${users[g[0].userId].givenName}`}</td>
                                         
                                         {
                                             g.sort((a, b) => a.qualityId > b.qualityId ? 1 : -1)
@@ -142,6 +139,10 @@ const AssignmentPage = ({assignment, levels, criteria, rubricOutcomes, groupedOu
         </div>
         <style jsx="true">{`
 
+        .green {
+            background: rgb(190,255,188);
+background: linear-gradient(153deg, rgba(190,255,188,1) 0%, rgba(47,227,26,1) 61%);
+        }
         .description {
             font-size: 0.9rem;
         }
@@ -240,10 +241,10 @@ export default AssignmentPage;
 export async function getStaticPaths() {
 
 
-    const {data, error} = await supabase.from('Assignments').select().eq("hasRubric", true);
+    const {data, error} = await supabase.from('RubricOutcomes').select()
     error != undefined && console.error("Assignments", error);
-    const paths = data.map(a => {return {params: {assignmentId: a.id}}});
-    console.log(paths)
+    const paths = data.map(a => {return {params: {slug: [a.assignmentId, a.userId]}}});
+    
     return {
       paths,
       // paths: [{ params: { assignmentId: '5bd4eb36-ba95-48a3-aabc-12b5341d4209' } }
@@ -253,8 +254,9 @@ export async function getStaticPaths() {
 
 export async function getStaticProps(context) {
 
-    const {assignmentId} = context.params;
-    console.log("Assignment Id", assignmentId)
+    
+    const [assignmentId, userId] = context.params.slug;
+    
 
     const {data: assignment, error} = await supabase.from('Assignments').select().eq('id', assignmentId).maybeSingle();
     error != undefined && console.error("Assignment Error", error);
@@ -265,10 +267,11 @@ export async function getStaticProps(context) {
     const {data: criteria, error: criteriaError} = await supabase.from('AssignmentRubricQualityCriteria').select().eq('assignmentId', assignmentId);
     criteriaError != undefined && console.error("Error Levels", criteriaError);
 
-    const {data: rubricOutcomes, error: rubricError} = await supabase.from("RubricOutcomes").select().eq('assignmentId', assignmentId);
+    // restrict by userId
+    const {data: rubricOutcomes, error: rubricError} = await supabase.from("RubricOutcomes").select().eq('assignmentId', assignmentId).eq("userId", userId);
     rubricError != undefined && console.error("Rubric Error", rubricError);
 
-    const {data: users, error: userError} = await supabase.from("Users").select()
+    const {data: users, error: userError} = await supabase.from("Users").select().eq("id", userId)
     userError != undefined && console.error("User Error", users)
 
     const {data: classData, error: classError} = await supabase.from("Classes").select().eq("id", assignment.classId).maybeSingle()

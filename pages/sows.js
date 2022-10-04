@@ -145,7 +145,7 @@ export const Classes =  () => {
 
                 <h1>Scheme of Work for  
                     <select onChange={(e) => setCurrentClass(e.target.value)} className="class-selector" value={currentClass }>
-                        {getClasses().map((c, i) => <option key={i} value={c}>{c}</option>)}
+                        {getClasses().sort((a, b) => a > b ? 1 : -1).map((c, i) => <option key={i} value={c}>{c}</option>)}
                     </select>
                 </h1>
                 
@@ -211,33 +211,34 @@ const Assignment = ({assignment, week}) => {
     return <><div className="display">
                 <div className="weekTitle">{week}</div>
                 
-                <div >
+                <div style={{width: "80%"}}>
                     {
                         assignment.map((a, i) => (<div  key={i} className="titleBlock">
                             <HtmlTooltip
-                               
-                                onOpen={handleOpen}
-                                title={
-                                <>
-                                    <Typography color="inherit">{a.assignmentTitle}</Typography>
-                                    {
-                                        tooltipText
-                                    }
-                                </>
-                                }
+                               onOpen={handleOpen}
+                                title={<>
+                                        <Typography color="inherit">{a.assignmentTitle}</Typography>
+                                        {tooltipText}
+                                    </>}
                             >
                                 
-                                <Link href={`/assignment/${a.assignmentId}`} className="assignmentTitle"><span>{a.assignmentTitle}</span></Link>
+                                <Link href={`/assignment/${a.assignmentId}`} className="assignmentTitle">
+                                    <span style={{width:"100%"}}>{a.assignmentTitle}</span>
+                                </Link>
                                
                             </HtmlTooltip>
+
+                            
+                                {a.hasRubric == "true" &&  <Link href={`/assignment/${a.assignmentId}`} >
+                                    <img className="imageLink" width="30px" height="30px" src="/images/rubric-logo.png"/>
+                                    </Link>
+                                    } 
                             
                             <Link href={a.webUrl} target="_new">
                                 <img className="imageLink" width="30px" height="30px" src="/images/teams-logo.png">
                                 </img>
                             </Link>
-                            
-                            
-                            </div>))
+                        </div>))
                     }
                 </div>
 
@@ -247,6 +248,7 @@ const Assignment = ({assignment, week}) => {
                     .titleBlock {
                         display: flex;
                         align-items: center;
+                        width: 100%;
                     }
 
                     .imageLink {
@@ -286,6 +288,7 @@ const Assignment = ({assignment, week}) => {
                         padding: 1rem;
                         border-radius: 1rem;
                         box-shadow: 0px 10px 10px #c0c0c0;
+                        width: 80%;
                     }
 
             `}

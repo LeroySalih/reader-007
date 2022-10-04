@@ -39,8 +39,8 @@ const ApplicationBar = () => {
         {label: 'Scheme of Work', href: '/sows'},
         {label: 'Weeklies', href: '/weeklies'},
         {label: 'Rubrics', href: '/rubrics'},
-        {label: `No Work Submitted for ${spacetime().startOf('day').subtract(1,'days').format('yyyy-MMM-dd')}`, href : `/no_work_submitted/${spacetime().startOf('day').subtract(1,'days').format('yyyy-MMM-dd')}`},
-        {label: `No Work Submitted for ${spacetime().startOf('day').subtract(8,'days').format('yyyy-MMM-dd')}`, href : `/no_work_submitted/${spacetime().startOf('day').subtract(8,'days').format('yyyy-MMM-dd')}`}
+        {label: `No Work Submitted for ${spacetime().startOf('week').subtract(1,'days').format('yyyy-MMM-dd')}`, href : `/no_work_submitted/${spacetime().startOf('day').subtract(1,'days').format('yyyy-MMM-dd')}`},
+        {label: `No Work Submitted for ${spacetime().startOf('week').subtract(8,'days').format('yyyy-MMM-dd')}`, href : `/no_work_submitted/${spacetime().startOf('day').subtract(8,'days').format('yyyy-MMM-dd')}`}
 
     ]
 
