@@ -20,14 +20,20 @@ const LightTooltip = styled(({ className, ...props }) => (
 const AssignmentPage = ({assignment, levels, criteria, rubricOutcomes, groupedOutcomes, users, classData}) => {
 
     const router = useRouter();
-    
+    //console.log("Assignment", assignment)
+    //console.log("levels", levels)  
+    //console.log("criteria", criteria)
+    //console.log("rubricOutcomes", rubricOutcomes)
+    // console.log("groupedOutcomes", groupedOutcomes)
+    //console.log("Users", users)
+    ///onsole.log("classData", classData) 
+
     // const {assignmentId} = router.query 
     if (!assignment)
         return <div>Loading</div>
 
 
     const setBackgroundColor = (levelIndex, levels) => {
-        // console.log("levelIndex", levelIndex, "levels", levels, levelIndex == (levels.length - 1))
         if (levelIndex == 0)
             return 'green'
             
@@ -37,8 +43,7 @@ const AssignmentPage = ({assignment, levels, criteria, rubricOutcomes, groupedOu
         return "yellow"
     }
    
-    // console.log("Class Name", classData)
-
+    
     return <>
         <div className="pageLayout">
             <header>
@@ -95,7 +100,6 @@ const AssignmentPage = ({assignment, levels, criteria, rubricOutcomes, groupedOu
                                          {
                                             Object.values(criteria)
                                                     .sort((a, b) => {
-                                                        //console.log(`Sorting ${a[0].qualityId} ${b[0].qualityId}`); 
                                                         return a[0].qualityId > b[0].qualityId ? 1 : -1})
                                                     .map((c, i) => 
                                             <th key={i} className="pupilQualityHeader">
@@ -243,7 +247,7 @@ export async function getStaticPaths() {
     const {data, error} = await supabase.from('Assignments').select().eq("hasRubric", true);
     error != undefined && console.error("Assignments", error);
     const paths = data.map(a => {return {params: {assignmentId: a.id}}});
-    console.log(paths)
+    //console.log(paths)
     return {
       paths,
       // paths: [{ params: { assignmentId: '5bd4eb36-ba95-48a3-aabc-12b5341d4209' } }
@@ -254,7 +258,7 @@ export async function getStaticPaths() {
 export async function getStaticProps(context) {
 
     const {assignmentId} = context.params;
-    console.log("Assignment Id", assignmentId)
+    
 
     const {data: assignment, error} = await supabase.from('Assignments').select().eq('id', assignmentId).maybeSingle();
     error != undefined && console.error("Assignment Error", error);
@@ -265,6 +269,7 @@ export async function getStaticProps(context) {
     const {data: criteria, error: criteriaError} = await supabase.from('AssignmentRubricQualityCriteria').select().eq('assignmentId', assignmentId);
     criteriaError != undefined && console.error("Error Levels", criteriaError);
 
+    // console.log("assignmentId", assignmentId)
     const {data: rubricOutcomes, error: rubricError} = await supabase.from("RubricOutcomes").select().eq('assignmentId', assignmentId);
     rubricError != undefined && console.error("Rubric Error", rubricError);
 
@@ -272,7 +277,6 @@ export async function getStaticProps(context) {
     userError != undefined && console.error("User Error", users)
 
     const {data: classData, error: classError} = await supabase.from("Classes").select().eq("id", assignment.classId).maybeSingle()
-    // console.log(classData, assignment)
     classError != undefined && console.error("Class Error", classError);
 
 
@@ -299,7 +303,6 @@ export async function getStaticProps(context) {
     const addCounts = (criteria, levels, rubricOutcomes) => {
 
         rubricOutcomes.forEach(ro => {
-            //console.log("ro", ro)
             if (criteria[ro.qualityId] === undefined) {
                 console.error("Quality Id not found", ro.qualityId)
 
@@ -343,14 +346,13 @@ export async function getStaticProps(context) {
 
     const groupedUsers = users.reduce((group, user) => { group[user.id] = user; return group }, {})
 
-    // console.log("Grouped Users", groupedUsers);
-
+    
     return {
       props: {
         assignment, 
         levels,
         criteria: newCriteria,
-        // rubricOutcomes : rubricOutcomes,
+        rubricOutcomes : rubricOutcomes,
         groupedOutcomes: groupedOutcomes(rubricOutcomes, levels), 
         users : groupedUsers,
         classData

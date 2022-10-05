@@ -37,7 +37,6 @@ export const Weeklies = () => {
 
         error && console.error(error)
         
-        // console.log("RPC::getclassassignments", data.filter(a => a.className == '10EC'))
         setClassAssignments(data)
 
         return data
@@ -145,7 +144,6 @@ const SelectWeek = ({weeks, onChange, value}) => {
 }
 
 const ClassAssignments = ({classAssignemnts, currentWeek}) => {
-    // console.log("classAssignments", classAssignemnts)
     
     if (classAssignemnts === null)
         return <pre></pre>

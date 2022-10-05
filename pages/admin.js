@@ -58,7 +58,7 @@ const fetchRubricsForAssignment = async (instance, account, loginRequest, ctx) =
 
         
         
-        // console.log("Assignment Rubric Found:", assignmentRubrics)
+       
 
         return assignmentRubrics.hasOwnProperty('error') ? null : assignmentRubrics
     } catch(e)
@@ -97,7 +97,7 @@ const fetchSubmissionsForAssignment = async (instance, account, loginRequest, ct
 
     const submissions = await fetchData(instance, account, loginRequest, {key: 'getSubmissions', ...ctx})
 
-    //console.log("Submissions", submissions);
+    
 
     return submissions.map(s => ({
         id: s.id,
@@ -134,7 +134,7 @@ const getPointsFromOutcome = (o) => {
 
     const outcome = o.filter(o => o['@odata.type'] === "#microsoft.graph.educationPointsOutcome") 
 
-    // console.log("Max Points", o);
+   
 
     return outcome.length == 1 ? outcome[0].points.points : null;
     
@@ -144,7 +144,7 @@ const getPointsFromOutcome = (o) => {
 // Fetches the Outcomes for a submission and the consolidates to a single object.
 const fetchOutcomeForSubmission = async (instance, account, loginRequest, ctx) => {
 
-    //console.log("ctx", ctx)
+    
     const o = await fetchData(instance, account, loginRequest, {key: 'getOutcomes', ...ctx})
     
 
@@ -158,8 +158,7 @@ const fetchOutcomeForSubmission = async (instance, account, loginRequest, ctx) =
     }
 
 
-    // console.log("Result", result);
-    // console.log("mergedOutcomes",result)
+    
     return result;
 
 }
@@ -182,7 +181,7 @@ const sliceAssigment = (a) => {
 
 const writeClassDataToDb = async (classData) => {
 
-  //console.log("Writting Data to DB", classData)
+  
   if (classData === null)
     return 
 
@@ -220,7 +219,7 @@ const writeClassDataToDb = async (classData) => {
 const writeAssignmentDataToDb = async (assignmentData) => {
 
 
-  //console.log("Writting Assignment Data to DB", assignmentData)
+  
   if (assignmentData === null)
     return
     
@@ -270,7 +269,7 @@ const writeClassMemberToDb = async (cm, classId) => {
   // .insert([{ classId: classId, userId: cm.id}]);
 
   error != undefined && console.error(error)
-  //console.log("Added User ", cm.id, " to ", classId);
+  
 
 }
 
@@ -287,7 +286,7 @@ const writeUserToDb = async (cm) => {
   // .insert([{ classId: classId, userId: cm.id}]);
 
   error != undefined && console.error(error)
-  //console.log("Added User", cm.id);
+  
 
 }
 
@@ -322,7 +321,7 @@ const writeSubmissionToDb = async(submission, classId, assignmentId) => {
         });
 
       error != undefined && console.error(error)
-      //console.log("Added Submission ", submission.id);
+      
 }
 
 
@@ -343,10 +342,10 @@ const AdminPage = () => {
     // Can be block loaded through the graph api!
     // also doesn't support the delta api, so we need to call all and only process most recent (by default)
     const loadClassData = async () => {
-        //console.log("Loading Class Data")
+        
         const result = await fetchClasses(instance, accounts[0], loginRequest)
         
-        // result.forEach(t => pushItemToQueue(msgTypes.class,  {classId: t.id}));
+        
         await writeClassDataToDb(result)
 
         
@@ -454,7 +453,7 @@ const AdminPage = () => {
     }
 
     const loadRubricData =async () => {
-      //console.log("Loading Rubric Data")
+      
       
       // remove existing rubrics
       await supabase.from("Rubrics").delete().neq("id", "0");

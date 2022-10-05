@@ -27,7 +27,6 @@ const AssignmentPage = ({assignment, levels, criteria, rubricOutcomes, groupedOu
 
 
     const setBackgroundColor = (levelIndex, levels) => {
-        // console.log("levelIndex", levelIndex, "levels", levels, levelIndex == (levels.length - 1))
         if (levelIndex == 0)
             return 'green'
             
@@ -37,8 +36,7 @@ const AssignmentPage = ({assignment, levels, criteria, rubricOutcomes, groupedOu
         return "yellow"
     }
    
-    // console.log("Class Name", classData)
-
+   
     const userName = (users && Object.values(users)[0] && Object.values(users)[0].givenName || "Unknown Name") + (users && Object.values(users)[0] && Object.values(users)[0].surname || "")
     return <>
         <div className="pageLayout">
@@ -98,8 +96,7 @@ const AssignmentPage = ({assignment, levels, criteria, rubricOutcomes, groupedOu
                                          {
                                             Object.values(criteria)
                                                     .sort((a, b) => {
-                                                        //console.log(`Sorting ${a[0].qualityId} ${b[0].qualityId}`); 
-                                                        return a[0].qualityId > b[0].qualityId ? 1 : -1})
+                                                         return a[0].qualityId > b[0].qualityId ? 1 : -1})
                                                     .map((c, i) => 
                                             <th key={i} className="pupilQualityHeader">
                                                 <Tooltip title={c[0].qualityId}>
@@ -275,7 +272,6 @@ export async function getStaticProps(context) {
     userError != undefined && console.error("User Error", users)
 
     const {data: classData, error: classError} = await supabase.from("Classes").select().eq("id", assignment.classId).maybeSingle()
-    // console.log(classData, assignment)
     classError != undefined && console.error("Class Error", classError);
 
 
@@ -302,7 +298,6 @@ export async function getStaticProps(context) {
     const addCounts = (criteria, levels, rubricOutcomes) => {
 
         rubricOutcomes.forEach(ro => {
-            //console.log("ro", ro)
             if (criteria[ro.qualityId] === undefined) {
                 console.error("Quality Id not found", ro.qualityId)
 
@@ -346,8 +341,7 @@ export async function getStaticProps(context) {
 
     const groupedUsers = users.reduce((group, user) => { group[user.id] = user; return group }, {})
 
-    // console.log("Grouped Users", groupedUsers);
-
+    
     return {
       props: {
         assignment, 

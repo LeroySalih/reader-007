@@ -18,8 +18,6 @@ import { v4 as uuidv4 } from 'uuid';
 
 const getSubmissionsToBeUpdated = async () => {
 
-    console.log(`Loading Submissions with a returned date since ${threeWeeksAgo} `)
-    
     // we want to reprocess assignments for the last three weeks incase of changes to 
     // submissions
     const {data: submissions, error: submissionsError} = await supabase
@@ -68,9 +66,8 @@ const getRubricId = (os) => {
 
 const getRubricOutcomes = (os, ctx) => {
     try{
-        console.log("os", os)
         const rubricOutcome = os.filter(o =>o['@odata.type'] === "#microsoft.graph.educationRubricOutcome")[0]
-        console.log("Rubric Outcome",rubricOutcome)
+        
         return rubricOutcome['rubricQualitySelectedLevels']
                  .map(ql => ({...ctx, ...ql }))
     } catch (e) {
@@ -84,8 +81,6 @@ const fetchOutcomesForSubmisison = async (instance, account, loginRequest, ctx) 
 
     const outcomes = await fetchData(instance, account, loginRequest, {key: 'getOutcome', ...ctx})
     let rubricOutcomes = null;
-
-    // console.log("outcomes", outcomes)
 
     const outcomeId = uuidv4();
 
@@ -103,7 +98,7 @@ const fetchOutcomesForSubmisison = async (instance, account, loginRequest, ctx) 
 
     if (outcomes.length == 3){
         rubricOutcomes = getRubricOutcomes(outcomes, ctx)
-        console.log("rubric outcomes", rubricOutcomes);
+        
     }
     
     return {outcome, rubricOutcomes};
@@ -126,19 +121,7 @@ const AdminOutcomesPage = () => {
     const getNextSubmission = async() => {
         
         // Get Next Matching Submission
-        /*
-         const {data: submission, error: submissionError} = await supabase
-                                .from("Submissions")
-                                .select("id, classId, assignmentId, userId, outcomeLastUpdated")
-                                .neq('status', 'working')
-                                .lt(`outcomeLastUpdated`, threeWeeksAgo)                            
-                                .limit(1)
-                                .maybeSingle()
-
-        console.log("submission", submission);
-        submissionError != undefined && console.error(submissionError)
-
-        */
+       
        
         if (submissions.length == 0){
             setSubmission(null)
@@ -172,7 +155,7 @@ const AdminOutcomesPage = () => {
 
 
     const handleSwitchChange = (e) => {
-       // console.log("Setting running to", e.target.checked)
+      
         setRunning(e.target.checked)
     }
 
@@ -180,11 +163,10 @@ const AdminOutcomesPage = () => {
     useEffect(()=> {
 
         if (running){
-            console.log("Setting Interval")
+            
             const t = setInterval( getNextSubmission, 200);
             setTimer(t)
         } else {
-            console.log("Clearing Interval")
             clearInterval(timer);
             setTimer(null);
         }
@@ -195,12 +177,8 @@ const AdminOutcomesPage = () => {
     
     useEffect (()=>{
         
-        //console.log("Submission", submission);
-
         if (submission === null || submission === undefined)
             return
-
-        //console.log("Getting Outcomes for Submission")
 
         const loadOutcomes = async () =>{
             
@@ -210,8 +188,6 @@ const AdminOutcomesPage = () => {
                     assignmentId: submission.assignmentId,
                     userId: submission.userId
                 });
-
-            // console.log("Fetched Outcome", outcome)
 
             if (outcome == undefined || outcome.length == 0)
             {

@@ -5,7 +5,7 @@ import {getRubric, getRubrics} from '../../libs/getRubrics'
 
 
 const RubricPage = ({rubric}) => {
-    console.log("Rubric", rubric)
+    
     
     return <Rubric rubric={rubric} />
 }

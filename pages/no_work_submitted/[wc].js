@@ -124,3 +124,44 @@ export async function getServerSideProps(context) {
       }, // will be passed to the page component as props
     }
 }
+
+export const  _getStaticProps = async (context) => {
+
+
+}
+
+const startOfWeek = (dt) => {
+  return spacetime(dt)
+  .weekStart("Sunday")
+  .startOf('week')
+  .format("yyyy-mmm-dd")
+}
+
+const allDueDates = (assignments) => {
+
+  const allDates = assignments.reduce((prev, curr) => {
+      
+      prev[startOfWeek(curr["dueDate"])] = 0
+
+      return prev
+  }, {});
+
+  return Object.keys(allDates).sort((a, b) => a < b ? 1 : -1)
+}
+
+export async function _getStaticPaths() {
+
+  const {data: assignments, error} = await supabase.from('Assignments').select();
+  error != undefined && console.error("Assignments", error);
+
+  const dueDates = allDueDates(assignments)
+  
+  const paths = dueDates.map(dd => {params: {dueDate: dd}})
+
+  return {
+    paths,
+    // paths: [{ params: { assignmentId: '5bd4eb36-ba95-48a3-aabc-12b5341d4209' } }
+    fallback: false, // can also be true or 'blocking'
+  }
+}
+
