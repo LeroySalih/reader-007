@@ -7,6 +7,7 @@ import spacetime from 'spacetime'
 
 import {DeptClasses} from "../config"
 import styled from "styled-components";
+import { dueWeek, dueWeekFromISO } from "../libs/spacetime";
 
 
 const ClassId = styled.div`
@@ -60,16 +61,19 @@ export const Weeklies = () => {
         }
         return classAssignemnts
                     .map(ca => {
-                        const dueWeek = spacetime(ca["dueDate"])
+                        /*const dueWeek = spacetime(ca["dueDate"])
                                             .weekStart("Sunday")
                                             .startOf('week')
                                             .format("yyyy-mmm-dd")
+                        */
+
+
                         
 
                         return {...ca, 
                                 assignmentTitle:ca["assignmentTitle"], 
                                 dueDate: ca["dueDate"],
-                                dueWeek}
+                                dueWeek: dueWeekFromISO(ca["dueDate"]).toISODate()}
                         }
                     )
                     .reduce( (prev, curr) => { 
@@ -101,7 +105,8 @@ export const Weeklies = () => {
             return []
         }
 
-        return Object.keys(configureClassAssignments(classAssignemnts)).sort( (a,b) => a < b ? 1 : -1)
+        return Object.keys(configureClassAssignments(classAssignemnts))
+                        .sort( (a,b) => a < b ? 1 : -1)
 
     }
  

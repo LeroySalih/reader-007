@@ -1,9 +1,10 @@
 
 import {supabase} from '../../config/supabase';
 import spacetime from "spacetime"
-import { GroupOutlined } from '@mui/icons-material';
+import { Construction, GroupOutlined } from '@mui/icons-material';
+import { dueWeek, dueWeekFromISO } from '../../libs/spacetime';
 
-const NoWorkSubmitted = ({query, data}) => {
+const NoWorkSubmitted = ({query, data, from, to}) => {
 
     const groupedPupils = data
                             .reduce((group, pupil) => {
@@ -20,7 +21,7 @@ const NoWorkSubmitted = ({query, data}) => {
    
     <div className="layout">
     {
-      groupedPupils && <h3>Found data for {Object.keys(groupedPupils).length} classes for {JSON.stringify(query, null, 2)}</h3>
+      groupedPupils && <h3>Found data for {Object.keys(groupedPupils).length} classes for {JSON.stringify(query, null, 2)} {from} to {to.substring(0,10)}</h3>
     }
     {
       groupedPupils && <table>
@@ -38,19 +39,23 @@ const NoWorkSubmitted = ({query, data}) => {
                         [
                         <tr key={`$A${i}`} className="startClass"><td className="classTitle">{k}</td></tr>, 
                         groupedPupils[k].map((r,i) => 
-                        <tr key={`$B${i}`}>
+                        [<tr key={`$B${i}`}>
                           <td>{r.assignmentname}</td>
-                          <td className='pupilName'>{r.givenname} {r.surname}</td>
+                          <td className='pupilName'>{r.givenname != null ? r.givenname + " " +r.surname : r.userid}</td>
                           <td>{r.feedback}</td>
                           <td>{r.points}</td>
                           
-                        </tr>)
+                        </tr>,
+                        
+                        ]),
+                        <tr key={`C${i}`}><td colSpan="4">&nbsp;</td></tr>
                         
 
                         ]
                       )
                       )
                   }
+                  
                 </tbody>
               </table>
     }
@@ -104,9 +109,15 @@ const NoWorkSubmitted = ({query, data}) => {
 export default NoWorkSubmitted
 
 
-export async function getServerSideProps(context) {
+export async function _getServerSideProps(context) {
 
     const {wc} = context.params
+    console.log('wc', wc, spacetime(wc).add(7,"days").format('iso'))
+
+    const assignments = await readAssignmentsFromDb();
+    console.log(assignments)
+    const dd = allDueDates(assignments)
+    console.log('dd', dd)
 
     let { data, error } = await supabase.rpc('get_no_work_submitted', {
           ifrom: wc, 
@@ -114,7 +125,7 @@ export async function getServerSideProps(context) {
         });
 
     if (error) console.error(error)
-    else console.log(data)
+    // else console.log(data)
     
     return {
       props: {
@@ -125,10 +136,7 @@ export async function getServerSideProps(context) {
     }
 }
 
-export const  _getStaticProps = async (context) => {
 
-
-}
 
 const startOfWeek = (dt) => {
   return spacetime(dt)
@@ -139,24 +147,61 @@ const startOfWeek = (dt) => {
 
 const allDueDates = (assignments) => {
 
-  const allDates = assignments.reduce((prev, curr) => {
+  const allDates = assignments.reduce((group, item) => {
       
-      prev[startOfWeek(curr["dueDate"])] = 0
+      group[startOfWeek(item["dueDateTime"])] = 0
 
-      return prev
+      return group
   }, {});
 
   return Object.keys(allDates).sort((a, b) => a < b ? 1 : -1)
 }
 
-export async function _getStaticPaths() {
-
+const readAssignmentsFromDb = async() => {
+  
   const {data: assignments, error} = await supabase.from('Assignments').select();
   error != undefined && console.error("Assignments", error);
 
+  return assignments;
+
+}
+
+export const  getStaticProps = async (context) => {
+
+  const {wc} = context.params
+  console.log('wc', wc, spacetime(wc).add(7,"days").format('iso'))
+
+  const assignments = await readAssignmentsFromDb();
+  const dd = allDueDates(assignments)
+  console.log('dd', dd)
+
+  let { data, error } = await supabase.rpc('get_no_work_submitted', {
+        ifrom: wc, 
+        ito: spacetime(wc).add(7,"days").format('iso')
+      });
+
+  error != undefined && console.error(error)
+  //else console.log(data)
+  
+  return {
+    props: {
+      from: wc,
+      to: spacetime(wc).add(7,"days").format('iso'),
+      data
+    }, // will be passed to the page component as props
+  }
+
+}
+
+export async function getStaticPaths() {
+
+  console.log("getStaticPaths called")
+
+  const assignments = await readAssignmentsFromDb()
+
   const dueDates = allDueDates(assignments)
   
-  const paths = dueDates.map(dd => {params: {dueDate: dd}})
+  const paths = dueDates.map(dd => ({params: {wc: dd}}))
 
   return {
     paths,

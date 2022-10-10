@@ -1,5 +1,6 @@
 
 import spacetime from 'spacetime'
+import { DateTime } from "luxon";
 
 export const threeWeeksAgo = spacetime()
                             .subtract(3, "weeks")
@@ -13,3 +14,11 @@ export const oneDayAgo = spacetime()
 
 
 export const neverUpdated = spacetime([2022, 0, 1]).format('iso');
+
+export const dueWeek = (dd) => {
+    return dd.plus({ days: 2 }).startOf("week").minus({ days: 8 });
+};
+
+export const dueWeekFromISO = (iso) => {
+    return dueWeek(DateTime.fromISO(iso))
+}

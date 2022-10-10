@@ -9,6 +9,8 @@ import Tooltip, { tooltipClasses } from '@mui/material/Tooltip';
 import { styled } from '@mui/material/styles';
 import Image from 'next/image';
 import Link from 'next/link';
+import { dueWeek, dueWeekFromISO } from '../libs/spacetime';
+
 
 const LightTooltip = styled(({ className, ...props }) => (
     <Tooltip {...props} classes={{ popper: className }} />
@@ -54,7 +56,7 @@ export const Classes =  () => {
 
         const allDates = classAssignments.reduce((prev, curr) => {
             
-            prev[startOfWeek(curr["dueDate"])] = 0
+            prev[dueWeekFromISO(curr["dueDate"]).toISODate()] = 0
     
             return prev
         }, {});
@@ -126,7 +128,7 @@ export const Classes =  () => {
             
             result[dd] = classAssignments
                                 .filter(ca => { 
-                                    return startOfWeek(ca["dueDate"]) == dd && ca.className == currentClass
+                                    return dueWeekFromISO(ca["dueDate"]).toISODate() == dd && ca.className == currentClass
                                 }
                                 
                                 )
