@@ -10,10 +10,12 @@ import Button from '@mui/material/Button';
 import Menu from '@mui/material/Menu';
 import MenuItem from '@mui/material/MenuItem';
 import spacetime from 'spacetime';
+import {dueWeek, dueWeekFromISO} from '../../libs/spacetime';
 
 import Link from 'next/link'
 
 import { AuthenticatedTemplate, UnauthenticatedTemplate, useMsal } from "@azure/msal-react";
+import { DateTime } from 'luxon';
 
 
 
@@ -39,9 +41,8 @@ const ApplicationBar = () => {
         {label: 'Scheme of Work', href: '/sows'},
         {label: 'Weeklies', href: '/weeklies'},
         {label: 'Rubrics', href: '/rubrics'},
-        {label: `No Work Submitted for ${spacetime().startOf('week').subtract(1,'days').format('yyyy-MMM-dd')}`, href : `/no_work_submitted/${spacetime().startOf('day').subtract(1,'days').format('yyyy-MMM-dd')}`},
-        {label: `No Work Submitted for ${spacetime().startOf('week').subtract(8,'days').format('yyyy-MMM-dd')}`, href : `/no_work_submitted/${spacetime().startOf('day').subtract(8,'days').format('yyyy-MMM-dd')}`}
-
+        {label: `No Work Submitted for ${dueWeekFromISO("2022-10-11").toISODate()}`, href : `/no_work_submitted/${dueWeekFromISO("2022-10-11").toISODate()}`},
+        
     ]
 
     return (<>

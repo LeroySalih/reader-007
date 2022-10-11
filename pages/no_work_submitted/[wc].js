@@ -1,10 +1,17 @@
-
 import {supabase} from '../../config/supabase';
 import spacetime from "spacetime"
 import { Construction, GroupOutlined } from '@mui/icons-material';
 import { dueWeek, dueWeekFromISO } from '../../libs/spacetime';
+import {DateTime} from 'luxon';
+import { useRouter } from 'next/router';
 
-const NoWorkSubmitted = ({query, data, from, to}) => {
+const NoWorkSubmitted = ({query, data, from, to, dueDates}) => {
+
+    const router = useRouter();
+
+    const handleChangeDate = (e) => {
+      router.push(`/no_work_submitted/${e.target.value}`);
+    }
 
     const groupedPupils = data
                             .reduce((group, pupil) => {
@@ -21,7 +28,12 @@ const NoWorkSubmitted = ({query, data, from, to}) => {
    
     <div className="layout">
     {
-      groupedPupils && <h3>Found data for {Object.keys(groupedPupils).length} classes for {JSON.stringify(query, null, 2)} {from} to {to.substring(0,10)}</h3>
+      groupedPupils && 
+        <span>Homework due between 
+          <b> 
+             <select onChange={handleChangeDate}value={from}>{dueDates.map((d, i) => <option key={i} value={d}>{d}</option>)}</select></b> and 
+          <b>{to.substring(0,10)}</b>
+        </span>
     }
     {
       groupedPupils && <table>
@@ -29,6 +41,7 @@ const NoWorkSubmitted = ({query, data, from, to}) => {
                   <tr className="header">
                     
                     <th>Assignment</th>
+                    <th>DueDate</th>
                     <th>Name</th>
                     <th>Comment</th>
                     <th>Points</th>
@@ -41,6 +54,7 @@ const NoWorkSubmitted = ({query, data, from, to}) => {
                         groupedPupils[k].map((r,i) => 
                         [<tr key={`$B${i}`}>
                           <td>{r.assignmentname}</td>
+                          <td>{r.duedatetime.substring(0,10)}</td>
                           <td className='pupilName'>{r.givenname != null ? r.givenname + " " +r.surname : r.userid}</td>
                           <td>{r.feedback}</td>
                           <td>{r.points}</td>
@@ -102,10 +116,6 @@ const NoWorkSubmitted = ({query, data, from, to}) => {
     </>
 }
 
-
-
-
-
 export default NoWorkSubmitted
 
 
@@ -135,7 +145,6 @@ export async function _getServerSideProps(context) {
       }, // will be passed to the page component as props
     }
 }
-
 
 
 const startOfWeek = (dt) => {
@@ -172,8 +181,8 @@ export const  getStaticProps = async (context) => {
   console.log('wc', wc, spacetime(wc).add(7,"days").format('iso'))
 
   const assignments = await readAssignmentsFromDb();
-  const dd = allDueDates(assignments)
-  console.log('dd', dd)
+  const dueDates = allDueDates(assignments)
+  console.log('dd', dueDates)
 
   let { data, error } = await supabase.rpc('get_no_work_submitted', {
         ifrom: wc, 
@@ -182,12 +191,15 @@ export const  getStaticProps = async (context) => {
 
   error != undefined && console.error(error)
   //else console.log(data)
+
+
   
   return {
     props: {
       from: wc,
       to: spacetime(wc).add(7,"days").format('iso'),
-      data
+      data,
+      dueDates
     }, // will be passed to the page component as props
   }
 
@@ -209,4 +221,3 @@ export async function getStaticPaths() {
     fallback: false, // can also be true or 'blocking'
   }
 }
-
