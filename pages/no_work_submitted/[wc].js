@@ -4,13 +4,97 @@ import { Construction, GroupOutlined } from '@mui/icons-material';
 import { dueWeek, dueWeekFromISO } from '../../libs/spacetime';
 import {DateTime} from 'luxon';
 import { useRouter } from 'next/router';
+import Button from '@mui/material/Button';
+import { useEffect, useState } from 'react';
 
 const NoWorkSubmitted = ({query, data, from, to, dueDates}) => {
 
     const router = useRouter();
 
+    const [emailList, setEmailList] = useState({})
+
+
+    useEffect(()=> {
+      
+      const tmpEmailList = {}
+      data.forEach((s) => tmpEmailList[s.submissionid] = false);
+
+      setEmailList(tmpEmailList);
+
+    }, [data])
+
+    const handleSubmissionClick = (submissionId) => {
+
+      setEmailList(prev => ({...prev, [submissionId]: !prev[submissionId]}))
+    }
+
     const handleChangeDate = (e) => {
       router.push(`/no_work_submitted/${e.target.value}`);
+    }
+
+    const sendEmail = async (url, body) => {
+        const response = await fetch(url, {
+          method: 'POST',
+          headers : {
+            'Content-Type' : 'application/json'
+          },      
+          body : JSON.stringify(body)
+      })
+      
+      const data = await response.json()
+      
+      return data;    
+    } 
+    
+    const handleOnSendTest = async () => {
+
+      const result = await sendEmail('/api/email', {
+        to: 'leroysalih@bisak.org', 
+        subject: 'No Homework', 
+        textBody: 'This is the text of the body',
+        htmlBody: 'This is the <u>text</u> of the body'
+      })
+
+
+    
+
+      console.log("result", result);
+    }
+
+
+    const handleOnSendNoHomework = async () => {
+
+      for (const submissionid of Object.keys(emailList).filter(k => k == true)){
+        
+        // get submission
+
+        const submissions = data.filter(d => d.submissionid == submissionid)
+        
+        if (!submissions || !submissions.length == 1 )
+          return;
+
+        const submission = submissions[0];
+
+        console.log("Submission", submission);
+
+        const subject = `No Homework for ${submission.classname}`
+        const htmlBody =  ` ${submission.givenname} has not submitted the homework "${submission.assignmentname}" for ${submission.classname}`
+
+        const response = await sendEmail('/api/email', {
+          to: 'leroysalih@bisak.org',
+          subject ,
+          textBody: htmlBody,
+          htmlBody
+        });
+
+        console.log("response", response)
+
+
+        
+
+      }
+      
+
     }
 
     const groupedPupils = data
@@ -26,6 +110,10 @@ const NoWorkSubmitted = ({query, data, from, to, dueDates}) => {
     { query && <h1>No Work Submitted from: {query.from} to {query.to}</h1>}
     { !groupedPupils && <h1>Loading.</h1>}
    
+   <div onClick={handleOnSendTest}><Button>Send Test Email</Button></div>
+   <div onClick={handleOnSendNoHomework}><Button>Send Live No Homework Email</Button></div>
+   
+    
     <div className="layout">
     {
       groupedPupils && 
@@ -39,7 +127,7 @@ const NoWorkSubmitted = ({query, data, from, to, dueDates}) => {
       groupedPupils && <table>
                 <tbody>
                   <tr className="header">
-                    
+                    <th>Submission Id</th>
                     <th>Assignment</th>
                     <th>DueDate</th>
                     <th>Name</th>
@@ -53,6 +141,7 @@ const NoWorkSubmitted = ({query, data, from, to, dueDates}) => {
                         <tr key={`$A${i}`} className="startClass"><td className="classTitle">{k}</td></tr>, 
                         groupedPupils[k].map((r,i) => 
                         [<tr key={`$B${i}`}>
+                          <td><input type="checkbox" checked={emailList && emailList[r.submissionid]} onClick={() => handleSubmissionClick(r.submissionid)}></input></td>
                           <td>{r.assignmentname}</td>
                           <td>{r.duedatetime.substring(0,10)}</td>
                           <td className='pupilName'>{r.givenname != null ? r.givenname + " " +r.surname : r.userid}</td>

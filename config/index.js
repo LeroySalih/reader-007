@@ -8,7 +8,6 @@ export const DeptClasses = [
     "8A_It1",
     "8B_It1",
     "8C_It1",
-    "9C_It1",
     "9A_It1",
     "9B_It1",
     "9C_It1",

@@ -7,7 +7,7 @@ import spacetime from 'spacetime'
 
 import {DeptClasses} from "../config"
 import styled from "styled-components";
-import { dueWeek, dueWeekFromISO } from "../libs/spacetime";
+import { dueWeek, dueWeekFromISO, workWeekFromISO } from "../libs/spacetime";
 
 
 const ClassId = styled.div`
@@ -73,19 +73,21 @@ export const Weeklies = () => {
                         return {...ca, 
                                 assignmentTitle:ca["assignmentTitle"], 
                                 dueDate: ca["dueDate"],
-                                dueWeek: dueWeekFromISO(ca["dueDate"]).toISODate()}
+                                dueWeek: dueWeekFromISO(ca["dueDate"]).toISODate(),
+                                workWeek: workWeekFromISO(ca["dueDate"]).toISODate()}
                         }
                     )
                     .reduce( (prev, curr) => { 
 
-                        if (prev[curr.dueWeek] == null){
-                            prev[curr.dueWeek] = {}
+                        if (prev[curr.workWeek] == null){
+                            prev[curr.workWeek] = {}
                         }
                             
-                        prev[curr.dueWeek][curr.className] = {
+                        prev[curr.workWeek][curr.className] = {
                             assignmentTitle: curr["assignmentTitle"], 
                             dueWeek: curr["dueWeek"],
                             dueDate: curr.dueDate,
+                            workWeek: curr.workWeek,
                             webUrl : curr.webUrl
                         }
                         

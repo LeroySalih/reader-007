@@ -1,8 +1,31 @@
 import Head from 'next/head'
 import Image from 'next/image'
 import styles from '../styles/Home.module.css'
-
+import {dueWeekFromISO, workWeekFromISO} from '../libs/spacetime';
+import Button from '@mui/material/Button'
 export default function Home() {
+
+  const handleSendMail = async () => {
+    
+    const response = await fetch('/api/email', {
+        method: 'POST',
+        headers : {
+          'Content-Type' : 'application/json'
+        },      
+        body : JSON.stringify({
+          to: 'leroysalih@bisak.org', 
+          subject: 'No Homework', 
+          textBody: 'This is the text of the body',
+          htmlBody: 'This is the <u>text</u> of the body'
+        })
+      })
+      
+    const data = await response.json()
+    console.log('data', data)
+    // console.log(body)
+    
+  }
+  
   return (
     <div className={styles.container}>
       <Head>
@@ -16,7 +39,9 @@ export default function Home() {
             <p>Welcome to </p>
             <p><a href="https://BISAK.org">BISAK</a></p> 
             <p>Business and Computing Dept</p>
+            
         </h1>
+        <Button onClick={handleSendMail}>Send Mail</Button>
 
         
        

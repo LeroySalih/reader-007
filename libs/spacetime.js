@@ -17,9 +17,13 @@ export const oneDayAgo = spacetime()
 export const neverUpdated = spacetime([2022, 0, 1]).format('iso');
 
 export const dueWeek = (dt) => {
-    return dt.startOf('week').minus({days: 8})
+    return dt.plus({days: 2}).startOf('week').minus({days: 1})
 };
 
 export const dueWeekFromISO = (iso) => {
     return dueWeek(DateTime.fromISO(iso))
+}
+
+export const workWeekFromISO = (iso) => {
+    return dueWeekFromISO(iso).minus({days: 7})
 }
