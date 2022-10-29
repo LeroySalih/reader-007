@@ -56,16 +56,11 @@ const fetchRubricsForAssignment = async (instance, account, loginRequest, ctx) =
             }
             );
 
-        
-        
-       
-
         return assignmentRubrics.hasOwnProperty('error') ? null : assignmentRubrics
     } catch(e)
     {
         return null;
     }
-    
 
 }
 
