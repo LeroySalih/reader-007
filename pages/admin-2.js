@@ -7,7 +7,7 @@ import { DateTime } from "luxon";
 import { loginRequest } from "../config/index";
 import { supabase } from "../config/supabase";
 
-export default () => {
+const Admin2 = () => {
     const [enabled, setEnabled] = useState(true);
     const [allAssignments, setAllAssignments] = useState(true);
 
@@ -170,3 +170,6 @@ export default () => {
         `}</style>
         </>
 }
+
+
+export default Admin2;
