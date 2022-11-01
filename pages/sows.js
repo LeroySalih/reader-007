@@ -4,7 +4,11 @@ import { supabase }  from "../config/supabase"
 
 import { dueWeek, dueWeekFromISO, workWeekFromISO } from '../libs/spacetime';
 import AssignmentsForClass from '../components/sows/AssignmentsForClass';
-
+import { ContactPageSharp } from '@mui/icons-material';
+import { Button } from '@mui/material';
+import { processAssignment, processSingleAssignment } from '../libs/admin';
+import { useMsal } from '@azure/msal-react';
+import { loginRequest } from '../config';
 
 export const Classes =  () => {
     
@@ -12,6 +16,8 @@ export const Classes =  () => {
     const [currentClass, setCurrentClass] = useState('')
     const [classAssignmentsByDate, setClassAssignmentsByDueDate] = useState(null);
     const [assignmentSubmissionCount, setAssignmentSubmissionCount] = useState(null);
+    const [selectedAssignments, setSelectedAssignments] = useState([]);
+    const {instance, accounts} = useMsal();
 
     const allDueDates = (classAssignments) => {
 
@@ -103,6 +109,18 @@ export const Classes =  () => {
 
     }, [classAssignments, currentClass])
 
+
+    const handleSelectionChange = (props)=> {
+        setSelectedAssignments(props)
+    }
+
+    const handleRefreshAssignments = () => {
+        for (const assignmentId of selectedAssignments){
+            console.clear()
+            processSingleAssignment(assignmentId, {instance, account: accounts[0], loginRequest})
+        }
+    }
+
     return <>
             <div className="pageHeader">
 
@@ -110,6 +128,10 @@ export const Classes =  () => {
                     <select onChange={(e) => setCurrentClass(e.target.value)} className="class-selector" value={currentClass }>
                         {getClasses().sort((a, b) => a > b ? 1 : -1).map((c, i) => <option key={i} value={c}>{c}</option>)}
                     </select>
+                    <Button variant="contained"
+                        onClick={handleRefreshAssignments}
+                        disabled={selectedAssignments.length == 0}
+                    >{`Refresh ${selectedAssignments.length} ${selectedAssignments.length == 1 ? 'assignment' : 'assignments'}`}</Button>
                 </h1>
             </div>
             
@@ -117,8 +139,13 @@ export const Classes =  () => {
                 classAssignmentsByDate && 
                 <AssignmentsForClass  
                     assignments={classAssignmentsByDate} 
-                    asc={assignmentSubmissionCount}/>
+                    asc={assignmentSubmissionCount}
+                    onSelectionChange={handleSelectionChange}
+                    
+                    />
+                
             }
+            <div><pre>{JSON.stringify(selectedAssignments,null, 2)}</pre></div>
 
             <style jsx="true">
                 {`

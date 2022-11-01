@@ -115,6 +115,6 @@ export async function callMsGraph(accessToken,  endPoint=graphConfig.graphMeEndp
             }
         
         })
-        .catch(error => console.error(error));
+        .catch(error => console.log("URL caused error", endPoint ));
 }
 

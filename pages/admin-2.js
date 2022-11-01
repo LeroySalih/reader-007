@@ -6,10 +6,12 @@ import { DateTime } from "luxon";
 
 import { loginRequest } from "../config/index";
 import { supabase } from "../config/supabase";
+import { Button } from "@mui/material";
 
 const Admin2 = () => {
     const [enabled, setEnabled] = useState(true);
     const [allAssignments, setAllAssignments] = useState(true);
+    const [loadRubrics, setLoadRubrics] = useState(false);
 
     const [fetching, setFetching] = useState('');
 
@@ -73,46 +75,107 @@ const Admin2 = () => {
     
     }
 
-    useEffect(()=> {
+   
 
-
-        const getData = async () => {
-            const result = await fetchMyAssignments(instance, accounts[0])
-            setAssignments(result);
+    const clearAssignments = async () => {
+            
+        if (allAssignments){
+            // delete all the existing assignments
+            console.log(`Deleting all assignments `)
+            const {data, error} = await supabase.from('Assignments').delete().neq('id', 0);
+        } else {
+            // delete since a given date
+            const deleteSinceDate = DateTime.now().minus({days: 30}).toISO()
+            console.log(`Deleting assignments created since ${deleteSinceDate}`)
+            const {data: deleteCheck, error: deleteError} = await supabase.from('Assignments').select().gt('createdDateTime', deleteSinceDate);
+            const {data, error} = await supabase.from('Assignments').delete().gt('createdDateTime', deleteSinceDate);
         }
+    }
+
+    const loadAssignments = async () => {
+        const result = await fetchMyAssignments(instance, accounts[0])
+        setAssignments(result);
+        return result;
+    }
+
+    const getFilteredAssignments = async () => {
         
-        getData();
-
-    },[]);
-
-
-    useEffect(()=> {
-
+        console.log("Filtering Assignments", assignments)
+        
         let filteredAssignments = [];
 
+        // Set up assignments to process
         if (allAssignments) {
-            console.log("Processing all assignments")
+            console.log("Returning all assignments")
             filteredAssignments = assignments
         } else {
-            console.log("Processing last 30 days assignments")
+            console.log("Filtering last 30 days assignments")
             filteredAssignments = assignments.filter(a => DateTime.fromISO(a.createdDateTime) >= DateTime.now().minus({days: 30}));
-            console.log(`Processing ${filteredAssignments.length} of ${assignments.length}`);
+            console.log(`Filtered ${filteredAssignments.length} of ${assignments.length}`);
         }
 
+        return filteredAssignments;
+    }
+
+    const processAssignments = async () => {
+
+        console.log("Clearing Assignments");
+        await clearAssignments();
+
+        console.log("Loading Assignments from Graph");
+        const assignments = await loadAssignments();
+
+        console.log("Filtering Assignments")
+        const filteredAssignments = await getFilteredAssignments(assignments);
+        console.log(`Filtered Assignments contains ${filteredAssignments.length} assignments`)
+
+
+    }
+
+    const writeAllAssignments = async(filteredAssignments) => {
+        // Write the assignments to the database
         for (const assignment of filteredAssignments){
 
             console.log("Writing Assignment")
-            writeAssignment(assignment);
+            await writeAssignment(assignment);
 
-            console.log(`Writing rubric for ${assignment.id}`);
-            setFetching(`Rubric for ${assignment.id}`);
-            const rubricResult = fetchRubricsForAssignment(instance, accounts[0], loginRequest, {classId: assignment.classId, assignmentId:assignment.id});
+            // console.log(`Writing rubric for ${assignment.id}`);
+            // setFetching(`Rubric for ${assignment.id}`);
+            // const rubricResult = fetchRubricsForAssignment(instance, accounts[0], loginRequest, {classId: assignment.classId, assignmentId:assignment.id});
+        }
+    }
 
+
+
+
+
+
+    const fetchRubrics = async () => {
+
+        console.log('Loading Rubric Data')
+        setFetching('Rubrics')
+
+        const {data, error} = await supabase.from('Assignments').select().is('hasRubric', null)
+
+        error && console.error(error)
+
+        console.log(`Found ${data.length} assignments to be checked`)
+
+        setFetching('')
+
+    }
+
+    useEffect (() => {
+
+        console.log(`loadRubrics has changed ${loadRubrics}`)
+
+        if (loadRubrics == false) {
+            return;
         }
 
+        fetchRubrics();
 
-
-    }, [assignments, allAssignments])
+    }, [loadRubrics])
 
     return <>
         <div className="app">
@@ -124,6 +187,7 @@ const Admin2 = () => {
                     <div className="options">
                         30 Days<Switch checked={allAssignments} onChange={(e) => setAllAssignments(e.target.checked)}/>All
                     </div>
+                    <div><Button onClick={processAssignments}>Start</Button></div>
                 </div>
                 <div className="stage">
                     <div className="title">Submissions</div>
@@ -141,6 +205,7 @@ const Admin2 = () => {
                 <pre>{JSON.stringify({allAssignments}, null, 2)}</pre>
                 <pre>{JSON.stringify({fetching}, null, 2)}</pre>
                 <pre>{JSON.stringify({assignmentCount: assignments && assignments.length}, null, 2)}</pre>
+                <pre>{JSON.stringify({loadRubrics}, null, 2)}</pre>
             </div>
         </div>
         
@@ -159,7 +224,7 @@ const Admin2 = () => {
             .stage {
                 border : silver 1px solid;
                 width : 200px;
-                height: 100px;
+                min-height: 100px;
                 border-radius: 1rem;
                 padding: 1rem;
             }

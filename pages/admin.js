@@ -125,15 +125,15 @@ const getPointsFromOutcome = (o) => {
 }
 
 
-  const getMaxPointsFromOutcome = (o) => {
+const getMaxPointsFromOutcome = (o) => {
 
-    const outcome = o.filter(o => o['@odata.type'] === "#microsoft.graph.educationPointsOutcome") 
+  const outcome = o.filter(o => o['@odata.type'] === "#microsoft.graph.educationPointsOutcome") 
 
-   
+  
 
-    return outcome.length == 1 ? outcome[0].points.points : null;
-    
-  }
+  return outcome.length == 1 ? outcome[0].points.points : null;
+  
+}
 
 
 // Fetches the Outcomes for a submission and the consolidates to a single object.
