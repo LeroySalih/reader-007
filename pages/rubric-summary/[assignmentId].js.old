@@ -34,6 +34,9 @@ const AssignmentPage = ({assignment, levels, criteria, rubricOutcomes, groupedOu
 
 
     const setBackgroundColor = (levelIndex, levels) => {
+        if (levelIndex === null)
+            return 'silver';
+        
         if (levelIndex == 0)
             return 'green'
             
@@ -51,7 +54,7 @@ const AssignmentPage = ({assignment, levels, criteria, rubricOutcomes, groupedOu
                 <table width="100%" style={{marginBottom:"3rem"}}>
                     <tbody>
                         <tr>
-                            <td>Description</td>
+                            <td>Description (Rubric)+</td>
                             {
                                 levels.map((l, i) => <td key={i}>{l.displayName}</td>)
                             }
@@ -86,7 +89,9 @@ const AssignmentPage = ({assignment, levels, criteria, rubricOutcomes, groupedOu
                 </table>
 
                 
-                
+                <div><pre>{JSON.stringify(groupedOutcomes, null, 2)}</pre></div>
+                <div><pre>{JSON.stringify(criteria, null, 2)}</pre></div>
+                <div><pre>{JSON.stringify(levels, null, 2)}</pre></div>
                 
                
 
@@ -228,6 +233,10 @@ const AssignmentPage = ({assignment, levels, criteria, rubricOutcomes, groupedOu
 
         .red {
             background-color : #ad2525;
+        }
+
+        .silver {
+            background-color : silver;
         }
 
         .pill {

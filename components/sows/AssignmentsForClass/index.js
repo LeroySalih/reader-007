@@ -57,7 +57,7 @@ const columns = [
     width: 100,
     headerAlign: 'center',
     align: 'center',
-    renderCell : (params) => ( params.value == "true" ? <a href={params.value} target="_new"><TeamsButton src="/images/rubric-logo.png"/></a> : "")
+    renderCell : (params) => ( params.value == "true" ? <a href={`rubric-summary/${params.row['id']}`} target="_new"><TeamsButton src="/images/rubric-logo.png"/></a> : "")
   },
  
 
