@@ -1,10 +1,22 @@
 import {useRouter} from 'next/router'
 import { supabase } from '../../config/supabase';
+import {useState} from 'react';
 
 import { styled } from '@mui/material/styles';
 import Tooltip, { tooltipClasses } from '@mui/material/Tooltip';
 import { UndoRounded } from '@mui/icons-material';
 import Link from 'next/link';
+import numeral from 'numeral';
+import { v4 as uuid } from 'uuid';
+import { CSVLink, CSVDownload } from "react-csv";
+
+
+import PropTypes from 'prop-types';
+import Tabs from '@mui/material/Tabs';
+import Tab from '@mui/material/Tab';
+import Typography from '@mui/material/Typography';
+import Box from '@mui/material/Box';
+
 
 const LightTooltip = styled(({ className, ...props }) => (
     <Tooltip {...props} classes={{ popper: className }} />
@@ -17,6 +29,38 @@ const LightTooltip = styled(({ className, ...props }) => (
     },
   }));
 
+  const calcUserScore = (user) => {
+    
+
+    const score = Object.values(user.qualities).reduce((group, item) => {return group + item.index}, 0)
+    const max = Object.values(user.qualities)?.length * 3
+    const scorePct = 1 - (score / max)
+
+    return scorePct;
+}
+
+
+function TabPanel(props) {
+    const { children, value, index, ...other } = props;
+  
+    return (
+      <div
+        role="tabpanel"
+        hidden={value !== index}
+        id={`simple-tabpanel-${index}`}
+        aria-labelledby={`simple-tab-${index}`}
+        {...other}
+      >
+        {value === index && (
+          <Box sx={{ p: 3 }}>
+            <div>{children}</div>
+          </Box>
+        )}
+      </div>
+    );
+  }
+  
+
 const AssignmentPage = ({
         assignment, 
         //levels, 
@@ -24,7 +68,15 @@ const AssignmentPage = ({
         //rubricOutcomes, 
         //users, 
         classData, 
-        shapedCriteria}) => {
+        shapedCriteria,
+        userCriteria
+    }) => {
+
+    const [value, setValue] = useState(0);
+
+    const handleChange = (event, newValue) => {
+        setValue(newValue);
+    };
 
     const router = useRouter();
     //console.log("Assignment", assignment)
@@ -39,32 +91,100 @@ const AssignmentPage = ({
     //if (!assignment)
      //   return <div>Loading</div>
 
+    const studentCsv = () => {
+        return [["class", "givenName", "surname", "score"], 
+            ...Object.values(userCriteria).map((user, index) => 
+            [
+                classData.displayName,
+                user.user?.givenName || user.user,
+                user.user?.surname || "",
+                (user.qualities && numeral(calcUserScore(user) * 100).format("00")) || null
+            ]
+        )]
+    }
 
-    
+   
    
     
     return <>
         <div className="pageLayout">
                 <div className="assignmentTitle">{assignment.displayName}</div>
                 <div className="classTitle">{classData.displayName}</div>
-                <div>
-                    {shapedCriteria && <div>
+                
+                <Box sx={{ width: '100%' }}>
+                    <Box sx={{ borderBottom: 1, borderColor: 'divider' }}>
+                        <Tabs value={value} onChange={handleChange} aria-label="basic tabs example">
+                        <Tab label="Class Summary"  />
+                        <Tab label="Pupil Details"  />
                         
+                        </Tabs>
+                    </Box>
+                    <TabPanel value={value} index={0}>
+                    <div>
+                    {shapedCriteria && <div>
+                           
+
                             {Object.values(shapedCriteria)
                                     .sort((a, b) => a.qualityDescription > b.qualityDescription ? 1 : -1)
                                     .map(quality => (
-                                <div key={quality.id}  className="quality">
-                                <div className="qualityDescription">{quality.qualityDescription}</div>
+                                <div key={uuid()}  className="quality">
+                                    <div className="qualityDescription">{quality.qualityDescription}</div>
                                 
-                                <div className="criteriaContainer">
-                                    {Object.values(quality.criteria).map((c, i) => <div key={i} className="criteriaDescription"><div>{c.criteriaDescription}</div> 
-                                    <div>{c.users ? c.users.length : 0} pupil(s)</div></div>)}</div>
+                                    <div className="criteriaContainer">
+                                        {Object.values(quality.criteria).map((c, i) => 
+                                        <div key={uuid()} className="criteriaDescription"><div>{c.criteriaDescription}</div> 
+                                            <div>{c.users ? c.users.length : 0} pupil(s)</div>
+                                        </div>)}
+                                    </div>
                                 </div>
                             ))}
                         </div>}
                 </div>
+                    </TabPanel>
+                    <TabPanel value={value} index={1}>
+                    <div key={uuid()}>
+                    
+                    {userCriteria &&
+                        <div key={uuid()}>
+                             <div>
+                                <CSVLink data={studentCsv()}>Download Class Details</CSVLink>
+                            </div>
+                            <div key={uuid()}>
+                                
+                                {Object.values(userCriteria)
+                                    .sort((a, b) => a.user.givenName > b.user.givenName ?  1 : -1)
+                                    .map(user => 
+                                    <div key={uuid()}>
+                                        
+                                        <div key={uuid()}>
+                                            {user.user.givenName ? `${user.user.givenName} ${user.user.surname} ${numeral(calcUserScore(user) * 100).format('00')}%` : `${user.user}`}
+                                        </div>
+                                        <ul>{
+                                                Object.values(user.qualities)   
+                                                    .sort((a, b) => a.qualityDescription > b.qualityDescription ? 1 : -1)
+                                                    .map((quality) => <li key={`desc-${uuid()}`}>{quality.qualityDescription} <span key={`index-${uuid()}`}>{3 - quality.index}</span></li>)
+
+                                            }
+                                        </ul>
+                                        
+                                </div>)}
+                            
+                            </div>
+                            
+                        </div>
+                    
+                    }
+                </div>
+                    </TabPanel>
+                    
+                    </Box>
+
                 
-            
+                
+                
+                
+                
+                
                 
             
         </div>
@@ -72,6 +192,11 @@ const AssignmentPage = ({
 
                 @import url('https://fonts.googleapis.com/css2?family=Oswald&family=Roboto:wght@300&display=swap');
 
+                .page-layout {
+                    width: 80vw;
+                    margin: auto;
+
+                }
 
                 .assignmentTitle {
                     margin-top: 2rem;
@@ -95,7 +220,7 @@ const AssignmentPage = ({
                 .qualityDescription {
                 
                     font-family: 'Roboto', sans-serif;
-                    font-size: 2rem;
+                    font-size: 1.4rem;
                     padding-left: 2rem;
                     font-weight: bold;
                 }
@@ -114,6 +239,7 @@ const AssignmentPage = ({
                     border-radius: 1rem;
                     padding: 1rem;
                     font-family: "Oswald",sans-serif;
+                    font-size: 0.8rem;
                     display: flex;
                     align-content: space-around;
                     flex-direction: column;
@@ -142,6 +268,9 @@ export async function getStaticPaths() {
       fallback: false, // can also be true or 'blocking'
     }
   }
+
+
+  
 
 export async function getStaticProps(context) {
 
@@ -200,6 +329,38 @@ export async function getStaticProps(context) {
         }
         
     }
+
+    const userCriteria = rubricOutcomes.reduce( ( group, item ) => {
+        try{
+
+            if (group[item.userId] === undefined){
+                // user data
+               const user = users.filter(u => u.id == item.userId)[0] || item.userId
+   
+               group[item.userId] = {user,  qualities: {}}
+           }
+           
+           // index of applied level / column
+           const index = levels.filter(l => l.levelId == item.columnId)[0].index
+   
+           // data for current quality
+           const quality = criteria.filter(c => c.qualityId == item.qualityId && c.index == index)[0]
+   
+           group[item.userId].qualities[item.qualityId] = {
+               qualityId : item.qualityId, 
+               qualityDescription: quality.qualityDescription, 
+               levelDescription: quality.description,
+               columnId: item.columnId, 
+               index}
+      
+           return group;
+        }
+        catch (error) {
+            console.error("Error!", error.message, item)
+            return group;
+        }
+        
+    } , {})
     
     return {
       props: {
@@ -209,7 +370,8 @@ export async function getStaticProps(context) {
        // rubricOutcomes,
        // users : users,
         classData, 
-        shapedCriteria 
+        shapedCriteria,
+        userCriteria 
         }, 
     }
   }
