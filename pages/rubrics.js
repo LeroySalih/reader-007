@@ -46,7 +46,7 @@ const Rubrics = ({rubrics}) => {
             
             <div className="page-header">
                 <h1>Rubrics Page</h1>
-                <CSVLink data={csvData}>Download me</CSVLink>;
+                
                 <input onChange={handleFilterChange} value={filter}></input>
             </div>
             
