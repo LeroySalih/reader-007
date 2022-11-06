@@ -363,6 +363,7 @@ export async function getStaticProps(context) {
     } , {})
     
     return {
+      revalidate: 60,
       props: {
          assignment, 
        // levels,
