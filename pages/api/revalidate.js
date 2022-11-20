@@ -8,6 +8,7 @@ export default async function handler (req, res) {
         revalidated = true;
     }
     catch (err) {
+        
         console.error(err)
     }
     res.json({revalidated});

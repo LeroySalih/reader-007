@@ -7,7 +7,8 @@ import { useRouter } from 'next/router';
 import Button from '@mui/material/Button';
 import { useEffect, useState } from 'react';
 
-const NoWorkSubmitted = ({query, data, from, to, dueDates}) => {
+
+const NoWorkSubmitted = ({query, data, from, to, dueDates, created}) => {
 
     const router = useRouter();
 
@@ -162,6 +163,7 @@ const NoWorkSubmitted = ({query, data, from, to, dueDates}) => {
                 </tbody>
               </table>
     }
+    <div>Page Created:{JSON.stringify(created, null, 2)}</div>
     </div>
 
     <style jsx="true">{`
@@ -284,11 +286,13 @@ export const  getStaticProps = async (context) => {
 
   
   return {
+    revalidate: 60,
     props: {
       from: wc,
       to: spacetime(wc).add(7,"days").format('iso'),
       data,
-      dueDates
+      dueDates,
+      created: DateTime.now().toObject()
     }, // will be passed to the page component as props
   }
 
