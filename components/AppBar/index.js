@@ -33,8 +33,8 @@ const ApplicationBar = () => {
 
     const adminMenuOptions = [
         {label: 'Admin', href: '/admin'},
-        {label: 'Submissions', href: '/admin-submissions'},
-        {label: 'Outcomes', href: '/admin-outcomes'}
+       // {label: 'Submissions', href: '/admin-submissions'},
+       // {label: 'Outcomes', href: '/admin-outcomes'}
     ]
 
     const reportsMenuOptions = [
