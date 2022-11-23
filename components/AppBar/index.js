@@ -38,11 +38,11 @@ const ApplicationBar = () => {
     ]
 
     const reportsMenuOptions = [
+        {label: 'Assignments', href: '/assignments'},
         {label: 'Scheme of Work', href: '/sows'},
         {label: 'Weeklies', href: '/weeklies'},
         {label: 'Rubrics', href: '/rubrics'},
         {label: `No Work Submitted for ${dueWeekFromISO("2022-10-11").toISODate()}`, href : `/no_work_submitted/${dueWeekFromISO("2022-10-11").toISODate()}`},
-        
     ]
 
     return (<>
