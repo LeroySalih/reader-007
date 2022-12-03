@@ -8,7 +8,7 @@ import Button from '@mui/material/Button';
 import { useEffect, useState } from 'react';
 
 
-const NoWorkSubmitted = ({query, data, from, to, dueDates, created}) => {
+const NoWorkSubmitted = ({ data, from, to, dueDates, created}) => {
 
     const router = useRouter();
 
@@ -105,10 +105,14 @@ const NoWorkSubmitted = ({query, data, from, to, dueDates, created}) => {
                               return group;
                             }, {})
 
+    if ( data == undefined || dueDates == undefined) {
+      return <h1>Loading</h1>
+    }
+
     return <>
     
     
-    { query && <h1>No Work Submitted from: {query.from} to {query.to}</h1>}
+    { <h1>No Work Submitted from: {from} to {to}</h1>}
     { !groupedPupils && <h1>Loading.</h1>}
    
    <div onClick={handleOnSendTest}><Button>Send Test Email</Button></div>
@@ -118,11 +122,14 @@ const NoWorkSubmitted = ({query, data, from, to, dueDates, created}) => {
     <div className="layout">
     {
       groupedPupils && 
+      <>
+      <div>Page Created:{JSON.stringify(created, null, 2)}</div>
         <span>Homework due between 
           <b> 
              <select onChange={handleChangeDate}value={from}>{dueDates.map((d, i) => <option key={i} value={d}>{d}</option>)}</select></b> and 
           <b>{to.substring(0,10)}</b>
         </span>
+      </>
     }
     {
       groupedPupils && <table>
@@ -163,7 +170,7 @@ const NoWorkSubmitted = ({query, data, from, to, dueDates, created}) => {
                 </tbody>
               </table>
     }
-    <div>Page Created:{JSON.stringify(created, null, 2)}</div>
+   
     </div>
 
     <style jsx="true">{`
@@ -210,31 +217,36 @@ const NoWorkSubmitted = ({query, data, from, to, dueDates, created}) => {
 export default NoWorkSubmitted
 
 
-export async function _getServerSideProps(context) {
+export async function getServerSideProps(context) {
 
-    const {wc} = context.params
-    console.log('wc', wc, spacetime(wc).add(7,"days").format('iso'))
+  const {wc} = context.params
+  console.log('wc', wc, spacetime(wc).add(7,"days").format('iso'))
 
-    const assignments = await readAssignmentsFromDb();
-    console.log(assignments)
-    const dd = allDueDates(assignments)
-    console.log('dd', dd)
+  const assignments = await readAssignmentsFromDb();
+  const dueDates = allDueDates(assignments)
+  console.log('dd', dueDates)
 
-    let { data, error } = await supabase.rpc('get_no_work_submitted', {
-          ifrom: wc, 
-          ito: spacetime(wc).add(7,"days").format('iso')
-        });
+  let { data, error } = await supabase.rpc('get_no_work_submitted', {
+        ifrom: wc, 
+        ito: spacetime(wc).add(7,"days").format('iso')
+      });
 
-    if (error) console.error(error)
-    // else console.log(data)
-    
-    return {
-      props: {
-        from: wc,
-        to: spacetime(wc).add(7,"days").format('iso'),
-        data
-      }, // will be passed to the page component as props
-    }
+  error != undefined && console.error(error)
+  //else console.log(data)
+
+
+  
+  return {
+  
+    props: {
+      from: wc,
+      to: spacetime(wc).add(7,"days").format('iso'),
+      data,
+      dueDates,
+      created: DateTime.now().toObject()
+    }, // will be passed to the page component as props
+  }
+   
 }
 
 
@@ -266,6 +278,8 @@ const readAssignmentsFromDb = async() => {
 
 }
 
+
+/*
 export const  getStaticProps = async (context) => {
 
   const {wc} = context.params
@@ -314,3 +328,4 @@ export async function getStaticPaths() {
     fallback: false, // can also be true or 'blocking'
   }
 }
+*/
