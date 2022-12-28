@@ -45,6 +45,12 @@ const ApplicationBar = () => {
         {label: `No Work Submitted for ${dueWeekFromISO("2022-10-11").toISODate()}`, href : `/no_work_submitted/${dueWeekFromISO("2022-10-11").toISODate()}`},
     ]
 
+    const formativesMenuOptions = [
+      {label: 'Last Updated', href: '/gf_last_updated'},
+      
+  ]
+
+
     return (<>
         <AppBar position="static">
   <Toolbar variant="dense">
@@ -60,6 +66,7 @@ const ApplicationBar = () => {
             <Link href="/"><Button color="neutral" label={'Admin'} >Home</Button></Link>
             <BasicMenu label={'Admin'} options={adminMenuOptions}/>
             <BasicMenu label={'Reports'} options={reportsMenuOptions}/>
+            <BasicMenu label={'Formatives'} options={formativesMenuOptions}/>
             </div>
         </AuthenticatedTemplate>
     </div>
