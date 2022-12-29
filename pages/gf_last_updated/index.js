@@ -3,6 +3,9 @@ import {supabase} from '../../config/supabase';
 import {useState, useEffect} from 'react';
 import { DateTime } from 'luxon';
 
+import { AutoComplete } from 'primereact/autocomplete';
+
+
 
 const loadClassList = async (setClassList, setCurrentClass) => {
     
@@ -34,6 +37,7 @@ const LastUpdated = () => {
     const [data, setData] = useState([]);
     const [currentClass, setCurrentClass] = useState(null);
     const [classList, setClassList] = useState([])
+    const [filteredClasses, setFilteredClasses] = useState([]);
 
     useEffect(()=> {
         
@@ -56,9 +60,27 @@ const LastUpdated = () => {
         setCurrentClass(e.target.value)
     }   
 
-    return <div className="page">
-        <h1> Last Updated for <select value={currentClass} onChange={handleCurrentClassChange}>{classList.map((c, i) => <option key={i} value={c.className}>{c.className}</option>)}</select></h1>
+    const searchClasses = (event) => {
         
+        console.log("searchClasses", event.query);
+
+        let fc = classList
+                    .map((c) => c.className)
+                    .filter(c => c.startsWith(event.query))
+
+        setFilteredClasses(fc);
+    }
+
+    return <div className="page">
+        <h1> Last Updated for <AutoComplete 
+            value={currentClass} 
+            suggestions={filteredClasses} 
+            completeMethod={searchClasses} 
+            onChange={(e) => setCurrentClass(e.value)} />
+        </h1>
+        
+        
+ 
         <hr></hr>
         <div className="description">The date that pupils last updated a formative for this class.</div>
 

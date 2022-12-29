@@ -438,6 +438,11 @@
     "@jridgewell/resolve-uri" "^3.0.3"
     "@jridgewell/sourcemap-codec" "^1.4.10"
 
+"@kurkle/color@^0.3.0":
+  "integrity" "sha512-hW0GwZj06z/ZFUW2Espl7toVDjghJN+EKqyXzPSV8NV89d5BYp5rRMBJoc+aUN0x5OXDMeRQHazejr2Xmqj2tw=="
+  "resolved" "https://registry.npmjs.org/@kurkle/color/-/color-0.3.1.tgz"
+  "version" "0.3.1"
+
 "@mui/base@5.0.0-alpha.98":
   "integrity" "sha512-c0U51+K2m57MASpRrmNs6qTXSvktDbVcSjD8zCRPbfuwYWERGGwNxwM3/jsBa4dSojTSmLPnOBFDypl74Ds6yQ=="
   "resolved" "https://registry.npmjs.org/@mui/base/-/base-5.0.0-alpha.98.tgz"
@@ -819,7 +824,7 @@
   dependencies:
     "@types/react" "*"
 
-"@types/react-transition-group@^4.4.5":
+"@types/react-transition-group@^4.4.1", "@types/react-transition-group@^4.4.5":
   "integrity" "sha512-juKD/eiSM3/xZYzjuzH6ZwpP+/lejltmiS3QEzV/vmb/Q8+HfDmxu+Baga8UEMGBqV88Nbg4l2hY/K2DkyaLLA=="
   "resolved" "https://registry.npmjs.org/@types/react-transition-group/-/react-transition-group-4.4.5.tgz"
   "version" "4.4.5"
@@ -1132,6 +1137,13 @@
   dependencies:
     "ansi-styles" "^4.1.0"
     "supports-color" "^7.1.0"
+
+"chart.js@^4.1.1":
+  "integrity" "sha512-P0pCosNXp+LR8zO/QTkZKT6Hb7p0DPFtypEeVOf+6x06hX13NIb75R0DXUA4Ksx/+48chDQKtCCmRCviQRTqsA=="
+  "resolved" "https://registry.npmjs.org/chart.js/-/chart.js-4.1.1.tgz"
+  "version" "4.1.1"
+  dependencies:
+    "@kurkle/color" "^0.3.0"
 
 "chownr@^2.0.0":
   "integrity" "sha512-bIomtDF5KGpdogkLd9VspvFzk9KfpyyGlS8YFVZl7TGPBHL5snIOnxeshwVgPteQ9b4Eydl+pVbIyE1DcvCWgQ=="
@@ -2725,6 +2737,19 @@
   "resolved" "https://registry.npmjs.org/prelude-ls/-/prelude-ls-1.2.1.tgz"
   "version" "1.2.1"
 
+"primeicons@^5.0.0 || ^6.0.0", "primeicons@^6.0.1":
+  "integrity" "sha512-KDeO94CbWI4pKsPnYpA1FPjo79EsY9I+M8ywoPBSf9XMXoe/0crjbUK7jcQEDHuc0ZMRIZsxH3TYLv4TUtHmAA=="
+  "resolved" "https://registry.npmjs.org/primeicons/-/primeicons-6.0.1.tgz"
+  "version" "6.0.1"
+
+"primereact@^8.7.3":
+  "integrity" "sha512-BjlIOOsVcUqX9edn7HewN/U28aUqREOvPP3fnpk7X6S7k5JTM570Dm7Z/TEPH1x/Mko1NL6iDaYWnkjKiBrtPQ=="
+  "resolved" "https://registry.npmjs.org/primereact/-/primereact-8.7.3.tgz"
+  "version" "8.7.3"
+  dependencies:
+    "@types/react-transition-group" "^4.4.1"
+    "react-transition-group" "^4.4.1"
+
 "prop-types@^15.6.2", "prop-types@^15.8.1":
   "integrity" "sha512-oj87CgZICdulUohogVAR7AjlC0327U4el4L6eAvOqCeudMDVU0NThNaV+b9Df4dXgSP1gXMTnPdhfe/2qDH5cg=="
   "resolved" "https://registry.npmjs.org/prop-types/-/prop-types-15.8.1.tgz"
@@ -2784,7 +2809,7 @@
     "prop-types" "^15.6.2"
     "scheduler" "^0.17.0"
 
-"react-transition-group@^4.4.5":
+"react-transition-group@^4.4.1", "react-transition-group@^4.4.5":
   "integrity" "sha512-pZcd1MCJoiKiBR2NRxeCRg13uCXbydPnmB4EOeRrY7480qNWO8IIgQG6zlDkm6uRMsURXPuKq0GWtiM59a5Q6g=="
   "resolved" "https://registry.npmjs.org/react-transition-group/-/react-transition-group-4.4.5.tgz"
   "version" "4.4.5"
