@@ -31,7 +31,7 @@ const FormativeDetails = ({formativeTitle, classId}) => {
         <div className="display-formative">
             <div className="pupil-name header">Name:</div>
             <div className="pupil-score header">Score:</div>
-            {formativeData && formativeData.map(f => [<div className="pupil-name">{f.pupilname}</div>, <div className="pupil-score">{f.score}</div>]) }
+            {formativeData && formativeData.map((f,i) => [<div key={`a${i}`} className="pupil-name">{f.pupilname}</div>, <div key={`b${i}`} className="pupil-score">{f.score}</div>]) }
         </div>    
         <style jsx="true">{`
         

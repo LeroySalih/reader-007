@@ -43,7 +43,7 @@ const UnitDisplay = ({unit, avgScores, handleFormativeClick}) => {
                 {displayObj && Object.values(displayObj)[0]?.map((c, i) => <th className="class-title" key={i}>{Object.keys(c)[0]}</th>)}
             </tr>
             {
-                displayObj && Object.keys(displayObj).map((k, i) => <tr>
+                displayObj && Object.keys(displayObj).map((k, i) => <tr key={`c${i}`}>
                     <td className="formative-title" key={i}>{k}</td> 
                     {displayObj[k].map((avg, i) => <td key={i} className={`avg-score ${selectedFormativeTitle == k && selectedClassId == Object.keys(avg)[0] ? 'selected' : ''}`} onClick={()=> {handleClick( k,Object.keys(avg)[0] )}}>{Object.values(avg)[0]?.toFixed(2)}</td>)}  
                     </tr>)
