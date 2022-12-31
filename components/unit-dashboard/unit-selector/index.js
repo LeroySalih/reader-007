@@ -1,6 +1,8 @@
 import ProgressChart from "../../progress-chart";
 import { InputText } from 'primereact/inputtext';
 import {useState, useEffect} from 'react';
+import { Button } from "primereact/button";
+import { Dialog } from 'primereact/dialog';
 
 const UnitSelector = ({unit, units, avgScores, handleSelectUnit}) => {
 
@@ -39,8 +41,7 @@ const UnitSelector = ({unit, units, avgScores, handleSelectUnit}) => {
             const flt = units.filter(u => u.title.includes(filterTerm) || u.subject.includes(filterTerm))
             setFilterUnits(flt);
         }
-        
-
+    
     }, [
         filterTerm
     ])
@@ -52,11 +53,13 @@ const UnitSelector = ({unit, units, avgScores, handleSelectUnit}) => {
 
     return <div className="unit-selector">
 
-    <span className="p-input-icon-left">
-        <i className="pi pi-search" />
-        <InputText value={filterTerm} onChange={(e) => setFilterTerm(e.target.value)} placeholder="Search" />
-    </span>
- 
+    <div className="filter-box">   
+        <span className="p-input-icon-left">
+            <i className="pi pi-search" />
+            <InputText value={filterTerm} onChange={(e) => setFilterTerm(e.target.value)} placeholder="Search" />
+        </span>
+        <Button icon="pi pi-plus" />
+    </div>
     {filterUnits.map((u, i) => <div key={i} className={`unit-card ${u.title == unit?.title ? 'selected' : ''}`}>
         <div>
         <div className="subject">{u.subject}</div>
@@ -75,7 +78,7 @@ const UnitSelector = ({unit, units, avgScores, handleSelectUnit}) => {
             .unit-card {
                 border : solid 1px silver;
                 border-radius: 1rem;
-                margin: 1rem;
+                margin: 0.2rem;
                 padding: 1rem;
                 display: flex;
                 flex-direction: row;
@@ -104,6 +107,10 @@ const UnitSelector = ({unit, units, avgScores, handleSelectUnit}) => {
             .progress-chart-container {
                 height: 4rem;
                 width: 4rem;
+            }
+
+            .filter-box {
+                margin: 0.1rem;
             }
         `}</style>
     </div>

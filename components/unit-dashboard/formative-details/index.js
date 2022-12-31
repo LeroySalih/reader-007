@@ -1,6 +1,7 @@
 import {supabase} from '../../../config/supabase';
 
 import {useState, useEffect} from 'react';
+import { DataTable, Column} from 'primereact/datatable';
 
 const loadFormativeData = async (setFormativeData, formativetitle, classid) => {
 
@@ -27,12 +28,12 @@ const FormativeDetails = ({formativeTitle, classId}) => {
         loadFormativeData(setFormativeData, formativeTitle, classId)
     }, [formativeTitle, classId])
     return <div>
-        
-        <div className="display-formative">
-            <div className="pupil-name header">Name:</div>
-            <div className="pupil-score header">Score:</div>
-            {formativeData && formativeData.map((f,i) => [<div key={`a${i}`} className="pupil-name">{f.pupilname}</div>, <div key={`b${i}`} className="pupil-score">{f.score}</div>]) }
-        </div>    
+        <DataTable value={formativeData}>
+            <Column field="pupilname" header="Pupil" sortable></Column>
+            <Column field="score" header="Score" sortable filter></Column>
+        </DataTable>
+
+       
         <style jsx="true">{`
         
             .display-formative {
@@ -44,20 +45,7 @@ const FormativeDetails = ({formativeTitle, classId}) => {
                 font-weight : heavy
             }
 
-            .pupil-name {
-                font-size: 0.8rem;
-                padding-top: 0.5rem;
-                padding-bottom: 0.5rem;
-            }
             
-
-
-            .pupil-score {
-                font-size: 0.8rem;
-                padding-top: 0.5rem;
-                padding-bottom: 0.5rem;
-            }
-
 
         `}</style>
 
