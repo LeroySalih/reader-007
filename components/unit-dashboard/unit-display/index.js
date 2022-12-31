@@ -36,14 +36,17 @@ const UnitDisplay = ({unit, avgScores, handleFormativeClick}) => {
         return <h1>Loading</h1>
 
     return <div>
-       <div>{selectedFormativeTitle}{selectedClassId}</div>
+       
         <table>
             <tr>
                 <th></th>
                 {displayObj && Object.values(displayObj)[0]?.map((c, i) => <th className="class-title" key={i}>{Object.keys(c)[0]}</th>)}
             </tr>
             {
-                displayObj && Object.keys(displayObj).map((k, i) => <tr key={`c${i}`}>
+                // display the formative scores for each class
+                displayObj && Object.keys(displayObj)
+                    .sort((a, b) => a.title > b.title ? -1 : 1)
+                    .map((k, i) => <tr key={`c${i}`}>
                     <td className="formative-title" key={i}>{k}</td> 
                     {displayObj[k].map((avg, i) => <td key={i} className={`avg-score ${selectedFormativeTitle == k && selectedClassId == Object.keys(avg)[0] ? 'selected' : ''}`} onClick={()=> {handleClick( k,Object.keys(avg)[0] )}}>{Object.values(avg)[0]?.toFixed(2)}</td>)}  
                     </tr>)

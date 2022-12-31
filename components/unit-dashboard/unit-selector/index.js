@@ -38,7 +38,11 @@ const UnitSelector = ({unit, units, avgScores, handleSelectUnit}) => {
         if (filterTerm === '')
             setFilterUnits(units);
         else{
-            const flt = units.filter(u => u.title.includes(filterTerm) || u.subject.includes(filterTerm))
+            const flt = units.filter(
+                u => u.title.includes(filterTerm) || 
+                u.subject.includes(filterTerm) ||
+                (u.classes.map((c) => c.includes(filterTerm))).includes(true)
+                )
             setFilterUnits(flt);
         }
     
@@ -60,12 +64,14 @@ const UnitSelector = ({unit, units, avgScores, handleSelectUnit}) => {
         </span>
         <Button icon="pi pi-plus" />
     </div>
-    {filterUnits.map((u, i) => <div key={i} className={`unit-card ${u.title == unit?.title ? 'selected' : ''}`}>
+    {filterUnits
+        .sort((a, b) => a.title > b.title ? 1 : -1)
+        .map((u, i) => <div key={i} className={`unit-card ${u.id == unit?.id ? 'selected' : ''}`}>
         <div>
         <div className="subject">{u.subject}</div>
         <div className="title" onClick={() => handleSelectUnit(u.id)}>{u.title}</div>
         
-        <div className="count">{u.classes.length} Classes</div>
+        <div className="count">{u.classes.map((c, i) => <span key={i}>{(i > 0 ) ? ', ' : ' '} {c}  </span>)} </div>
         <div className="count">{u.formativeTitles.length} Formatives</div>
         <div className="avgScore">Avg Score: {calcAvgScore(u).toFixed(2)}%</div>
         </div>
