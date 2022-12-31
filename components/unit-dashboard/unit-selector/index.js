@@ -1,6 +1,11 @@
 import ProgressChart from "../../progress-chart";
+import { InputText } from 'primereact/inputtext';
+import {useState, useEffect} from 'react';
 
 const UnitSelector = ({unit, units, avgScores, handleSelectUnit}) => {
+
+    const [filterTerm, setFilterTerm] = useState('');
+    const [filterUnits, setFilterUnits] = useState(units);
 
     const getAvgScoresForUnit = (unit) => {
         if (!unit)
@@ -19,12 +24,40 @@ const UnitSelector = ({unit, units, avgScores, handleSelectUnit}) => {
         //return sumOfAverageScores / filteredAvgScores.length
         return (sumOfAverageScores / maxPoints) * 100
     }
+    
+    useEffect(()=> {
+        setFilterTerm('')
+        setFilterUnits(units);
+    }, [units])
+
+
+    useEffect(()=> {
+
+        if (filterTerm === '')
+            setFilterUnits(units);
+        else{
+            const flt = units.filter(u => u.title.includes(filterTerm) || u.subject.includes(filterTerm))
+            setFilterUnits(flt);
+        }
+        
+
+    }, [
+        filterTerm
+    ])
+
+    
 
     if (!units) 
         return <h1>Loading</h1>
 
     return <div className="unit-selector">
-    {units.map((u, i) => <div key={i} className={`unit-card ${u.title == unit?.title ? 'selected' : ''}`}>
+
+    <span className="p-input-icon-left">
+        <i className="pi pi-search" />
+        <InputText value={filterTerm} onChange={(e) => setFilterTerm(e.target.value)} placeholder="Search" />
+    </span>
+ 
+    {filterUnits.map((u, i) => <div key={i} className={`unit-card ${u.title == unit?.title ? 'selected' : ''}`}>
         <div>
         <div className="subject">{u.subject}</div>
         <div className="title" onClick={() => handleSelectUnit(u.id)}>{u.title}</div>
