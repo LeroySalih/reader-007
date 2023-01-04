@@ -78,6 +78,17 @@ const UploadPage = () => {
         }
     }, [data]);
 
+    async function signInWithAzure() {
+        const { data, error } = await supabase.auth.signInWithOAuth(
+          {
+            provider: 'azure',
+          },
+          {
+            scopes: 'email',
+          }
+        )
+      }
+
 /*
 
     def fileNameToDate (fName):
@@ -179,6 +190,8 @@ const UploadPage = () => {
         console.log(data) 
     }
 
+
+
     const generateUploadData = () => {
         
         const dtFileUploadDate = calcUploadDate();
@@ -238,6 +251,9 @@ const UploadPage = () => {
     </div>
     <div>
         <button onClick={uploadFile}>Upload File</button>
+    </div>
+    <div>
+        <button onClick={signInWithAzure}>Login </button>
     </div>
 </div>
     
