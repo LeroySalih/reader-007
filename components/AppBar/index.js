@@ -46,6 +46,7 @@ const ApplicationBar = () => {
     ]
 
     const formativesMenuOptions = [
+      {label: 'Upload', href: '/gf_upload'},
       {label: 'Last Updated', href: '/gf_last_updated'},
       {label: 'Units', href: '/gf_units'},
       
