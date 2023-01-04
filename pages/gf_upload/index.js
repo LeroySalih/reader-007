@@ -19,6 +19,8 @@ const UploadPage = () => {
     const [progress, setProgress] = useState(0);
     const [maxProgress, setMaxProgress] = useState(0);
 
+    const [supabaseUser, setSupabaseUser] = useState(null);
+
     // It state will contain the error when
     // correct file extension is not used
     const [error, setError] = useState("");
@@ -71,6 +73,38 @@ const UploadPage = () => {
         reader.readAsText(file);
     };
 
+    useEffect(() => {
+        
+        /* detect auth changes */
+        supabase.auth.onAuthStateChange((event, session) => {
+            console.log(event, session)
+        });
+
+        const login = async () => {
+
+            const { data: { user } } = await supabase.auth.getUser()
+
+            if (!user){
+
+                const { data, error } = await supabase.auth.signInWithOAuth(
+                    {
+                      provider: 'azure',
+                    },
+                    {
+                      scopes: 'email',
+                    }
+                  )
+            } else {
+                setSupabaseUser(user);
+            }
+            
+        }
+
+
+        login();
+        
+
+    }, [])
 
     useEffect( ()=> {
         if (data.length > 0){
@@ -79,34 +113,9 @@ const UploadPage = () => {
     }, [data]);
 
     async function signInWithAzure() {
-        const { data, error } = await supabase.auth.signInWithOAuth(
-          {
-            provider: 'azure',
-          },
-          {
-            scopes: 'email',
-          }
-        )
+        
       }
 
-/*
-
-    def fileNameToDate (fName):
-    parts = fName.split(", ")
-    dt = parts[0][-10:]
-    time = parts[1][:8]
-    
-
-    date = int(dt[0:2])
-    month = int(dt[3: 5])
-    year = int(dt[6:10])
-
-    hr = int(time[0:2])
-    min = int(time[3:5])
-    sec = int(time[6:8])
-
-    return datetime(year, month, date, hr, min, sec)
-*/
     const calcUploadDate = () => {
 
         const {name: fName} = file;
@@ -129,24 +138,6 @@ const UploadPage = () => {
 
     }
 
-    /**
-     * 
-     * #look to see if there is a record for this pupil, formtative, class and score
-    result = client.table("gf_submissions.current").select("*") \
-                        .eq("formativeTitle", updateObj["formativeTitle"]) \
-                        .eq("pupilName", updateObj["pupilName"]) \
-                        .eq("className", updateObj["className"]) \
-                        .eq("score", updateObj["score"]) \
-                        .execute()
-
-    #if not, upsert one
-    if (len(result.data) ==  0):
-        print("Updating", updateObj["pupilName"], updateObj["uploadDate"], updateObj["score"])
-        result = client.table("gf_submissions.current").upsert(updateObj).execute()
-    else:
-        print("Skipped", updateObj["pupilName"], updateObj["uploadDate"], updateObj["score"])
-    
-     */
     const writeToSupabase = async (updateObj) => {
 
         const {data, error} = await supabase.from(TABLE_NAME)
@@ -174,10 +165,7 @@ const UploadPage = () => {
 
     }
 
-    const uploadFile = async () => {
-
-        // todo
-    }
+    
 
     const checkCount = async (dtFileUploadDate) => {
         const {data, error} = await supabase.from(TABLE_NAME)
@@ -231,6 +219,24 @@ const UploadPage = () => {
 
         checkCount (dtFileUploadDate);
 
+        uploadFile()
+
+    }
+
+    const uploadFile = async () => {
+
+        const avatarFile = file
+        const { data: fileData, error: fileError } = await supabase
+        .storage
+        .from('data_files')
+        .upload(file.name, avatarFile, {
+            cacheControl: '3600',
+            upsert: false
+        });
+
+        fileError && console.error(fileError);
+        !fileError && console.log("File Uploaded", fileData);
+
     }
 
     return <div>
@@ -255,6 +261,7 @@ const UploadPage = () => {
     <div>
         <button onClick={signInWithAzure}>Login </button>
     </div>
+    <pre>{JSON.stringify(supabaseUser, null, 2)}</pre>
 </div>
     
 }
