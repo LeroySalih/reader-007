@@ -64,6 +64,7 @@ const UnitSelector = ({unit, units, avgScores, handleSelectUnit}) => {
         </span>
         <Button icon="pi pi-plus" />
     </div>
+    <div className="units">
     {filterUnits
         .sort((a, b) => a.title > b.title ? 1 : -1)
         .map((u, i) => <div key={i} className={`unit-card ${u.id == unit?.id ? 'selected' : ''}`}>
@@ -79,8 +80,14 @@ const UnitSelector = ({unit, units, avgScores, handleSelectUnit}) => {
             <ProgressChart progress={calcAvgScore(u)}/>
         </div>
         </div>)}
+        </div>
         <style jsx="true">{`
         
+            .units {
+                height: 80vh;
+                overflow-y: scroll;
+            }
+
             .unit-card {
                 border : solid 1px silver;
                 border-radius: 1rem;

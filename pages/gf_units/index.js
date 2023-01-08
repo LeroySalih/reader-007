@@ -79,7 +79,7 @@ const GfUnitsPages = () => {
     }
     
     return <div className="page">
-        <h1>The Gf Units Pages</h1>
+        <h1>Units Dashboard</h1>
         <div className="page-layout">
             
             <UnitSelector 
