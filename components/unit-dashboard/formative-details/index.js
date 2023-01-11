@@ -1,7 +1,8 @@
 import {supabase} from '../../../config/supabase';
 
 import {useState, useEffect} from 'react';
-import { DataTable, Column} from 'primereact/datatable';
+import { DataTable} from 'primereact/datatable';
+import { Column} from 'primereact/column';
 
 const loadFormativeData = async (setFormativeData, formativetitle, classid) => {
 
