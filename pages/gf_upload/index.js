@@ -7,7 +7,7 @@ import React, { useState, useEffect } from "react";
 const allowedExtensions = ["csv"];
 
 
-const TABLE_NAME = "gf_submissions.current"
+const TABLE_NAME = "test.gf_submissions.current"
 
 const UploadPage = () => {
 
@@ -228,8 +228,8 @@ const UploadPage = () => {
         const avatarFile = file
         const { data: fileData, error: fileError } = await supabase
         .storage
-        .from('data_files')
-        .upload(file.name, avatarFile, {
+        .from('data-files')
+        .upload(`/private/${calcUploadDate().toISOString()}.csv`, avatarFile, {
             cacheControl: '3600',
             upsert: false
         });
