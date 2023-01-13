@@ -4,23 +4,25 @@ import { ProgressBar } from 'primereact/progressbar';
 import {supabase} from '../../config/supabase';
 
 import React, { useState, useEffect } from "react";
+import useTerminalDisplay from "../../components/terminal-display";
+
 const allowedExtensions = ["csv"];
 
-
-const TABLE_NAME = "test.gf_submissions.current"
-
+process.env.NEXT_PUBLIC_DEBUG == "true" ? console.log("USING DEBUG SETTINGS") : console.log("USING PRODUCTION SETTINGS")
+const TABLE_NAME = process.env.NEXT_PUBLIC_DEBUG == "true" ? "test.gf_submissions.current" : "gf_submissions.current" 
+ 
 const UploadPage = () => {
 
     // This state will store the parsed data
-    const [data, setData] = useState([]);
-    const [uploadData, setUploadData] = useState([]);
-    const [uploadDate, setUploadDate] = useState('');
+    // const [data, setData] = useState([]);
+    // const [uploadData, setUploadData] = useState([]);
+    // const [uploadDate, setUploadDate] = useState('');
 
     const [progress, setProgress] = useState(0);
     const [maxProgress, setMaxProgress] = useState(0);
 
     const [supabaseUser, setSupabaseUser] = useState(null);
-
+    const {addMessage, clearMessages, Display} = useTerminalDisplay();
     // It state will contain the error when
     // correct file extension is not used
     const [error, setError] = useState("");
@@ -30,9 +32,14 @@ const UploadPage = () => {
 
     // This function will be called when
     // the file input changes
+    
     const handleFileChange = (e) => {
         setError("");
-         
+        clearMessages();
+        
+         // reset the upload
+         setProgress(0);
+
         // Check if user has entered the file
         if (e.target.files.length) {
             const inputFile = e.target.files[0];
@@ -48,14 +55,16 @@ const UploadPage = () => {
  
             // If input type is correct set the state
             setFile(inputFile);
+            checkCount(calcUploadDate(inputFile.name));
         }
     };
 
-    const handleParse = () => {
+    
+    const handleParse = async () => {
          
         // If user clicks the parse button without
         // a file we show a error
-        if (!file) return setError("Enter a valid file");
+        if (!file) return addMessage("Enter a valid file");
  
         // Initialize a reader which allows user
         // to read any file or blob.
@@ -67,11 +76,30 @@ const UploadPage = () => {
             const csv = Papa.parse(target.result, { header: true });
             const parsedData = csv?.data;
             const columns = Object.keys(parsedData[0]);
-            setData(parsedData);
+            
+            // setData(parsedData);
+
+            if (parsedData.length > 0){
+
+                addMessage(`Read ${Object.values(parsedData).length} in Upload File.`)
+
+                const uploadData = processData(file, parsedData);
+
+                // Check the number of items uploaded.
+                checkCount (calcUploadDate(file.name));
+
+                // Upload File to Supabase Bucket
+                uploadFile(file)
+                //setUploadData()
+            }
+
         };
-        calcUploadDate();
+
+        // calcUploadDate(file.name);
+        
         reader.readAsText(file);
     };
+
 
     useEffect(() => {
         
@@ -106,19 +134,12 @@ const UploadPage = () => {
 
     }, [])
 
-    useEffect( ()=> {
-        if (data.length > 0){
-            setUploadData(generateUploadData(data))
-        }
-    }, [data]);
+    
 
-    async function signInWithAzure() {
+   
+    const calcUploadDate = (fName) => {
+
         
-      }
-
-    const calcUploadDate = () => {
-
-        const {name: fName} = file;
         const parts = fName.split(", ");
         const dt = parts[0].slice( parts[0].length - 10, parts[0].length);
         const time = parts[1].slice( 0, 8);
@@ -149,19 +170,17 @@ const UploadPage = () => {
 
         error && console.error("Error", error);
 
+        // query was successful, but no rows were returned, 
+        // so we will update the db.
         if (data && data.length === 0) {
             //console.log("updateObj", updateObj)
             const {data: upsertCheck, error: upsertError} = await supabase.from(TABLE_NAME).upsert(updateObj)
             upsertError && console.error(upsertError);
+            console.log(`Added ${updateObj["pupilName"]}`)
+            addMessage(`Added ${updateObj["pupilName"]}`)
         } else {
-            // console.log("Skipping", updateObj)
+            addMessage(`Skipping ${updateObj["pupilName"]}`)
         }
-
-        
-        
-
-        
-
 
     }
 
@@ -174,23 +193,26 @@ const UploadPage = () => {
                                         
         error && console.error("Error", error);
 
-        console.log(data?.length, "items added")
+        
+        addMessage(`${data?.length} for this ${dtFileUploadDate.toISOString()}`)
         console.log(data) 
     }
 
-
-
-    const generateUploadData = () => {
+    const processData = (file, data) => {
         
-        const dtFileUploadDate = calcUploadDate();
+        
+
+        const dtFileUploadDate = calcUploadDate(file.name);
+        
+        addMessage(`Starting Upload for ${dtFileUploadDate}`);
 
         const keys = Object.keys(data);
 
         const tmpUploadData = []
-
+        
         setProgress(0);
-        setMaxProgress(data.length)
-
+        setMaxProgress(data.length);
+        
         for (const upload of data){
             for (var c = 5; c < Object.keys(upload).length; c++){
 
@@ -217,51 +239,67 @@ const UploadPage = () => {
             
         }
 
-        checkCount (dtFileUploadDate);
-
-        uploadFile()
 
     }
 
-    const uploadFile = async () => {
+    const uploadFile = async (file) => {
 
         const avatarFile = file
         const { data: fileData, error: fileError } = await supabase
         .storage
         .from('data-files')
-        .upload(`/private/${calcUploadDate().toISOString()}.csv`, avatarFile, {
+        .upload(`/private/${calcUploadDate(file.name).toISOString()}.csv`, avatarFile, {
             cacheControl: '3600',
-            upsert: false
+            upsert: true
         });
 
         fileError && console.error(fileError);
         !fileError && console.log("File Uploaded", fileData);
+        !fileError && addMessage(`File Uploaded ${fileData.path}` )
 
     }
 
     return <div>
-    <label htmlFor="csvInput" style={{ display: "block" }}>
-        Enter CSV File
-    </label>
-    <input
-        onChange={handleFileChange}
-        id="csvInput"
-        name="file"
-        type="File"
-    />
     <div>
-        <button onClick={handleParse}>Parse</button>
+        <div className="card">
+            
+            <div className="card-title">Enter CSV File</div>    
+            
+            <input
+                onChange={handleFileChange}
+                id="csvInput"
+                name="file"
+                type="File"
+            />
+    
+            <button onClick={handleParse}>Parse</button>
+            <div>
+                <ProgressBar value={(progress / maxProgress) * 100} />
+            </div>
+
+            <div>
+                <Display />
+            </div>
+        </div>
     </div>
-    <div>
-        <ProgressBar value={(progress / maxProgress) * 100} />
-    </div>
-    <div>
-        <button onClick={uploadFile}>Upload File</button>
-    </div>
-    <div>
-        <button onClick={signInWithAzure}>Login </button>
-    </div>
-    <pre>{JSON.stringify(supabaseUser, null, 2)}</pre>
+    <style >{`
+    
+        .card {
+            width: 80%;
+            margin: auto;
+            background-color: white;
+            padding: 1rem;
+            margin: 2rem;
+            border: silver 1px solid;
+            border-radius: 1rem;
+            box-shadow: 0px 5px 20px #a0a0a0;
+        }
+
+        .card-title {
+
+        }
+    
+    `}</style>
 </div>
     
 }
