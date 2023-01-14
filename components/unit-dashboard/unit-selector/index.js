@@ -1,13 +1,32 @@
 import ProgressChart from "../../progress-chart";
 import { InputText } from 'primereact/inputtext';
-import {useState, useEffect} from 'react';
+import {useState, useEffect, useContext} from 'react';
+import GfUnitsContext from "../../gf-units-context";
+
 import { Button } from "primereact/button";
 import { Dialog } from 'primereact/dialog';
+import { PickList} from 'primereact/picklist';
+import FormativePickList from "../formative-pick-list";
+import FormativePickDlg from "../formative-pick-dlg";
 
-const UnitSelector = ({unit, units, avgScores, handleSelectUnit}) => {
+const UnitSelector = ({units, avgScores, handleSelectUnit, handleNewUnit}) => {
 
     const [filterTerm, setFilterTerm] = useState('');
     const [filterUnits, setFilterUnits] = useState(units);
+    const [showEditFormatives, setShowEditFormatives] = useState(false);
+    const [target, setTarget] = useState([]);
+    const [source, setSource] = useState([{name:'Apple'}, {name:'Bannana'}, {name:'Cheries'}]);
+    //const [selectedUnit, setSelectedUnit] = useState(unit);
+
+    const {unitDlg, formativeDlg, classDlg} = useContext(GfUnitsContext);
+    const {selectedUnit, selectUnit, unitNewDlgShow} = unitDlg;
+    const {formativeEditDlgShow, formativeNewUnit} = formativeDlg;
+    const {classEditDlgShow} = classDlg;
+
+    //useEffect(()=> {
+    //    setSelectedUnit(unit);
+    // }, [unit]);
+
 
     const getAvgScoresForUnit = (unit) => {
         if (!unit)
@@ -33,6 +52,7 @@ const UnitSelector = ({unit, units, avgScores, handleSelectUnit}) => {
     }, [units])
 
 
+
     useEffect(()=> {
 
         if (filterTerm === '')
@@ -48,7 +68,19 @@ const UnitSelector = ({unit, units, avgScores, handleSelectUnit}) => {
     
     }, [
         filterTerm
-    ])
+    ]);
+
+   
+
+    
+
+    const handleShowClassesDlg = async (u) => {
+        classEditDlgShow(u);
+    }
+
+    const handleShowFormativesDlg = async (u) => {
+        formativeEditDlgShow(u);
+    }
 
     
 
@@ -62,18 +94,18 @@ const UnitSelector = ({unit, units, avgScores, handleSelectUnit}) => {
             <i className="pi pi-search" />
             <InputText value={filterTerm} onChange={(e) => setFilterTerm(e.target.value)} placeholder="Search" />
         </span>
-        <Button icon="pi pi-plus" />
+        <Button icon="pi pi-plus" onClick={handleNewUnit}/>
     </div>
     <div className="units">
     {filterUnits
         .sort((a, b) => a.title > b.title ? 1 : -1)
-        .map((u, i) => <div key={i} className={`unit-card ${u.id == unit?.id ? 'selected' : ''}`}>
+        .map((u, i) => <div key={i} className={`unit-card ${u.id == selectedUnit?.id ? 'selected' : ''}`}>
         <div>
         <div className="subject">{u.subject}</div>
-        <div className="title" onClick={() => handleSelectUnit(u.id)}>{u.title}</div>
+        <div className="title" onClick={() => selectUnit(u)}>{u?.title}</div>
         
-        <div className="count">{u.classes.map((c, i) => <span key={i}>{(i > 0 ) ? ', ' : ' '} {c}  </span>)} </div>
-        <div className="count">{u.formativeTitles.length} Formatives</div>
+        <div className="count" onClick={() => {handleShowClassesDlg(u)}}>{u.classes.map((c, i) => <span key={i}>{(i > 0 ) ? ', ' : ' '} {c}  </span>)} </div>
+        <div className="count" onClick={() => {handleShowFormativesDlg(u)}}>{u.formativeTitles.length} Formatives</div>
         <div className="avgScore">Avg Score: {calcAvgScore(u).toFixed(2)}%</div>
         </div>
         <div className="progress-chart-container">
@@ -81,6 +113,10 @@ const UnitSelector = ({unit, units, avgScores, handleSelectUnit}) => {
         </div>
         </div>)}
         </div>
+
+        
+            
+        
         <style jsx="true">{`
         
             .units {
@@ -127,6 +163,13 @@ const UnitSelector = ({unit, units, avgScores, handleSelectUnit}) => {
             }
         `}</style>
     </div>
+}
+
+
+const ItemTemplate = (item) => {
+
+    return <pre>{JSON.stringify(item.name, null, 2)}</pre>
+
 }
 
 export default UnitSelector;

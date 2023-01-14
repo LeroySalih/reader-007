@@ -1,10 +1,14 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useContext } from "react";
+import GfUnitsContext from "../../gf-units-context";
 
-const UnitDisplay = ({unit, avgScores, handleFormativeClick}) => {
+const UnitDisplay = ({seed, testProp, avgScores, handleFormativeClick}) => {
 
     const [displayObj, setDisplayObj] = useState({})
     const [selectedFormativeTitle, setSelectedFormativeTitle] = useState(null);
     const [selectedClassId, setSelectedClassId] = useState(null);
+
+    const {unitDlg}  = useContext(GfUnitsContext);
+    const {selectedUnit} = unitDlg;
 
     const createDisplayObject = (unit, avgScores) => {
         if (!unit || !avgScores)
@@ -17,9 +21,9 @@ const UnitDisplay = ({unit, avgScores, handleFormativeClick}) => {
 
     useEffect(()=> {
 
-        setDisplayObj(createDisplayObject(unit, avgScores));
+        setDisplayObj(createDisplayObject(selectedUnit, avgScores));
 
-    }, [unit, avgScores])
+    }, [seed, selectedUnit, avgScores])
 
 
     const handleClick = (formativeTitle, classId) => {
@@ -30,9 +34,9 @@ const UnitDisplay = ({unit, avgScores, handleFormativeClick}) => {
 
     }
 
-    
+    console.log("unit", selectedUnit);
 
-    if (!unit)
+    if (!selectedUnit)
         return <h1>Loading</h1>
 
     return <div>

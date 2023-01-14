@@ -8,8 +8,10 @@ import ProgressChart from '../../components/progress-chart';
 import UnitSelector from '../../components/unit-dashboard/unit-selector';
 import UnitDisplay from '../../components/unit-dashboard/unit-display';
 import FormativeDetails from '../../components/unit-dashboard/formative-details';
-
-const loadUnits = async (setUnits) => {
+import GfUnitsContext from '../../components/gf-units-context';
+import FormativePickDlg from '../../components/unit-dashboard/formative-pick-dlg';
+import ClassPickDlg from '../../components/unit-dashboard/class-pick-dlg';
+const loadUnits = async (setUnits, setSelectedUnit) => {
 
     const {data, error} = await supabase
                         .from("gf_units")
@@ -17,7 +19,8 @@ const loadUnits = async (setUnits) => {
                         
 
     console.log("data", data)
-    setUnits(data);
+    setUnits(data.sort((a, b) => a.title > b.title ? 1 : -1));
+    data.length > 0 && setSelectedUnit(data.sort((a, b) => a.title > b.title ? 1 : -1)[0])
 }
 
 const loadAvgScores = async (setUnits) => {
@@ -41,11 +44,18 @@ const GfUnitsPages = () => {
     const [selectedFormativeTitle, setSelectedFormativeTitle] = useState(null);
     const [selectedClassId, setSelectedClassId] = useState(null)
 
+    const [showFormativeEditDlg, setShowFormativeEditDlg] = useState(false);
+    const [showClassEditDlg, setShowClassEditDlg] = useState(false);
+
+    const [unitDisplayKey, setUnitDisplayKey] = useState(0);
+
     useEffect(()=>{
 
         (async () => {
-            await loadUnits(setUnits);
+            await loadUnits(setUnits, setSelectedUnit);
             await loadAvgScores(setAvgScores);
+
+            
         })()
         
 
@@ -59,37 +69,126 @@ const GfUnitsPages = () => {
     }
 
    
-
     
-
-    
-
-
-    const handleSelectUnit = (id) => {
-
-        const tmpSelectedUnit = units.filter(u => u.id === id)[0];
-
-        setSelectedUnit(tmpSelectedUnit);
-    }
-
     const handleFormativeClick = ( formativeTitle, classId) => {
 
         setSelectedClassId(classId);
         setSelectedFormativeTitle(formativeTitle);
     }
-    
-    return <div className="page">
+
+    const selectUnit = (unit) => {
+        setSelectedUnit(unit)
+    }
+
+    const formativeEditDlgShow = (unit) => {
+        console.log("Showing Dlg");
+        setSelectedUnit(unit);
+        setShowFormativeEditDlg(true);
+    }
+
+    const formativeEditDlgOK = async (unit, formatives) => {
+        console.log("Saving...", unit.title, formatives.length)
+        setShowFormativeEditDlg(false);
+
+        const updateObj = Object.assign({}, unit, {formativeTitles: formatives})
+
+        console.log("updateObj", updateObj);
+
+        const {data, error} = await supabase.from("gf_units")
+                        .update(updateObj)
+                        .eq("id", updateObj.id);
+
+        const tmpUnits = units.map(u => u.id === updateObj.id ? updateObj : u);
+        
+        setUnits(tmpUnits);
+
+        selectUnit(updateObj);
+
+        setUnitDisplayKey(prev => prev + 1)
+
+        error && console.error(error);
+    }
+
+    const formativeEditDlgCancel = () => {
+        setShowFormativeEditDlg(false)
+    }
+
+    const classEditDlgShow = (unit) => {
+
+        console.log("Showing Dlg", unit);
+        setSelectedUnit(unit);
+        setShowClassEditDlg(true);
+
+    }
+
+    const classEditDlgOK = async (unit, classes) => {
+
+        console.log("Saving...", unit.title, classes.length)
+        setShowClassEditDlg(false);
+
+        const updateObj = Object.assign({}, unit, {classes})
+
+        console.log("updateObj", updateObj);
+
+        const {data, error} = await supabase.from("gf_units")
+                        .update(updateObj)
+                        .eq("id", updateObj.id);
+
+        const tmpUnits = units.map(u => u.id === updateObj.id ? updateObj : u);
+        
+        setUnits(tmpUnits);
+
+        selectUnit(updateObj);
+
+        setUnitDisplayKey(prev => prev + 1)
+
+        error && console.error(error);
+    }
+
+    const classEditDlgCancel = () => {
+        setShowClassEditDlg(false)
+    }
+
+
+    const unitNewDlgShow = () => {}
+
+
+    return <>
+        <GfUnitsContext.Provider value={
+            {   
+                unitDlg : {
+                    selectUnit,
+                    selectedUnit,
+                    unitNewDlgShow
+                },
+                formativeDlg: {
+                    
+                    formativeEditDlgShow, 
+                    formativeEditDlgOK, 
+                    formativeEditDlgCancel
+                },
+                classDlg: {
+                    classEditDlgShow, 
+                    classEditDlgOK, 
+                    classEditDlgCancel
+                }
+            }
+        }>
+        <div className="page">
         <h1>Units Dashboard</h1>
         <div className="page-layout">
             
             <UnitSelector 
                 units={units} 
                 avgScores={avgScores}
-                handleSelectUnit={handleSelectUnit} 
-                unit={selectedUnit}/>
+                unit={selectedUnit}
+                
+                />
 
             
-            <UnitDisplay 
+            <UnitDisplay
+                testProp="hello"
+                seed={unitDisplayKey} 
                 unit={selectedUnit} 
                 avgScores={getAvgScoresForUnit(selectedUnit)} 
                 handleFormativeClick={handleFormativeClick}/>
@@ -97,6 +196,15 @@ const GfUnitsPages = () => {
             <FormativeDetails 
                 formativeTitle={selectedFormativeTitle} 
                 classId={selectedClassId}/>
+
+            <FormativePickDlg header="Header" 
+                visible={showFormativeEditDlg} 
+                style={{ width: '70vw' }} />
+
+
+            <ClassPickDlg header="Header"
+                visible={showClassEditDlg} 
+                style={{ width: '70vw' }} />
         
 
         </div>
@@ -121,6 +229,8 @@ const GfUnitsPages = () => {
         
         `}</style>   
     </div>
+    </GfUnitsContext.Provider>
+    </>
 }
 
 
