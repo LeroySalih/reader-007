@@ -36,7 +36,7 @@ const ClassPickDlg = ({ visible, style}) => {
     return <>
     <Dialog header={`Classes for ${selectedUnit?.title}`} visible={visible} style={style} footer={renderFooter()} onHide={classEditDlgCancel}>
         <ClassPickList unit={selectedUnit} onClassesChange={handleClassesChanged}/>
-        <pre>{JSON.stringify(currentClasses, null, 2)}</pre>
+        
     </Dialog>
     
     </>
