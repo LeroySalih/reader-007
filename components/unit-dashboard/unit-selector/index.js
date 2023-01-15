@@ -82,6 +82,12 @@ const UnitSelector = ({units, avgScores, handleSelectUnit, handleNewUnit}) => {
         formativeEditDlgShow(u);
     }
 
+    const handleShowNewUnitDlg = async () => {
+
+        console.log("handleShowNewUnitDlg")
+        unitNewDlgShow();
+    }
+
     
 
     if (!units) 
@@ -94,7 +100,7 @@ const UnitSelector = ({units, avgScores, handleSelectUnit, handleNewUnit}) => {
             <i className="pi pi-search" />
             <InputText value={filterTerm} onChange={(e) => setFilterTerm(e.target.value)} placeholder="Search" />
         </span>
-        <Button icon="pi pi-plus" onClick={handleNewUnit}/>
+        <Button icon="pi pi-plus" onClick={() => handleShowNewUnitDlg()}/>
     </div>
     <div className="units">
     {filterUnits

@@ -11,6 +11,8 @@ import FormativeDetails from '../../components/unit-dashboard/formative-details'
 import GfUnitsContext from '../../components/gf-units-context';
 import FormativePickDlg from '../../components/unit-dashboard/formative-pick-dlg';
 import ClassPickDlg from '../../components/unit-dashboard/class-pick-dlg';
+import NewUnitDlg from '../../components/unit-dashboard/new-unit-dlg';
+import { CallEnd } from '@mui/icons-material';
 const loadUnits = async (setUnits, setSelectedUnit) => {
 
     const {data, error} = await supabase
@@ -46,6 +48,7 @@ const GfUnitsPages = () => {
 
     const [showFormativeEditDlg, setShowFormativeEditDlg] = useState(false);
     const [showClassEditDlg, setShowClassEditDlg] = useState(false);
+    const [showNewUnitDlg, setShowNewUnitDlg] = useState(false);
 
     const [unitDisplayKey, setUnitDisplayKey] = useState(0);
 
@@ -150,8 +153,17 @@ const GfUnitsPages = () => {
     }
 
 
-    const unitNewDlgShow = () => {}
+    const unitNewDlgShow = () => {
+        setShowNewUnitDlg(true);
+    }
 
+    const unitNewDlgOK = () => {
+        setShowNewUnitDlg(false);
+    }
+
+    const unitNewDlgCancel = () => {
+        setShowNewUnitDlg(false);
+    }
 
     return <>
         <GfUnitsContext.Provider value={
@@ -159,7 +171,9 @@ const GfUnitsPages = () => {
                 unitDlg : {
                     selectUnit,
                     selectedUnit,
-                    unitNewDlgShow
+                    unitNewDlgShow,
+                    unitNewDlgOK,
+                    unitNewDlgCancel
                 },
                 formativeDlg: {
                     
@@ -205,7 +219,10 @@ const GfUnitsPages = () => {
             <ClassPickDlg header="Header"
                 visible={showClassEditDlg} 
                 style={{ width: '70vw' }} />
-        
+            {console.log("showNewUnitDlg",showNewUnitDlg )}
+            <NewUnitDlg header="Header"
+                visible={showNewUnitDlg}
+                style={{ width: "70vw"}} />        
 
         </div>
 
