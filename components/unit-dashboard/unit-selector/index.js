@@ -37,8 +37,12 @@ const UnitSelector = ({units, avgScores, handleSelectUnit, handleNewUnit}) => {
 
     const calcAvgScore = (unit) => {
         
+
+        if (!unit.classes || !unit.formativeTitles)
+            return 0;
+
         const filteredAvgScores = getAvgScoresForUnit(unit)
-        const maxPoints = 100 * unit.classes.length * unit.formativeTitles.length
+        const maxPoints = 100 * unit.classes?.length * unit.formativeTitles?.length
 
         const sumOfAverageScores = filteredAvgScores.reduce((prev, curr)=> { return prev + curr.avg_score}, 0)
         
@@ -82,6 +86,12 @@ const UnitSelector = ({units, avgScores, handleSelectUnit, handleNewUnit}) => {
         formativeEditDlgShow(u);
     }
 
+    const handleShowNewUnitDlg = async () => {
+
+        console.log("handleShowNewUnitDlg")
+        unitNewDlgShow();
+    }
+
     
 
     if (!units) 
@@ -94,7 +104,7 @@ const UnitSelector = ({units, avgScores, handleSelectUnit, handleNewUnit}) => {
             <i className="pi pi-search" />
             <InputText value={filterTerm} onChange={(e) => setFilterTerm(e.target.value)} placeholder="Search" />
         </span>
-        <Button icon="pi pi-plus" onClick={handleNewUnit}/>
+        <Button icon="pi pi-plus" onClick={() => handleShowNewUnitDlg()}/>
     </div>
     <div className="units">
     {filterUnits
@@ -104,8 +114,10 @@ const UnitSelector = ({units, avgScores, handleSelectUnit, handleNewUnit}) => {
         <div className="subject">{u.subject}</div>
         <div className="title" onClick={() => selectUnit(u)}>{u?.title}</div>
         
-        <div className="count" onClick={() => {handleShowClassesDlg(u)}}>{u.classes.map((c, i) => <span key={i}>{(i > 0 ) ? ', ' : ' '} {c}  </span>)} </div>
-        <div className="count" onClick={() => {handleShowFormativesDlg(u)}}>{u.formativeTitles.length} Formatives</div>
+        <div className="count" onClick={() => {handleShowClassesDlg(u)}}>{u.classes?.map((c, i) => <span key={i}>{(i > 0 ) ? ', ' : ' '} {c}  </span>)}</div>
+        {u.classes.length == 0 && <div className="count" onClick={() => {handleShowClassesDlg(u)}}>No Classes</div>}
+        
+        <div className="count" onClick={() => {handleShowFormativesDlg(u)}}>{u.formativeTitles?.length} Formatives</div>
         <div className="avgScore">Avg Score: {calcAvgScore(u).toFixed(2)}%</div>
         </div>
         <div className="progress-chart-container">

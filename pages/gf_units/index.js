@@ -11,6 +11,8 @@ import FormativeDetails from '../../components/unit-dashboard/formative-details'
 import GfUnitsContext from '../../components/gf-units-context';
 import FormativePickDlg from '../../components/unit-dashboard/formative-pick-dlg';
 import ClassPickDlg from '../../components/unit-dashboard/class-pick-dlg';
+import NewUnitDlg from '../../components/unit-dashboard/new-unit-dlg';
+import { CallEnd } from '@mui/icons-material';
 const loadUnits = async (setUnits, setSelectedUnit) => {
 
     const {data, error} = await supabase
@@ -46,6 +48,7 @@ const GfUnitsPages = () => {
 
     const [showFormativeEditDlg, setShowFormativeEditDlg] = useState(false);
     const [showClassEditDlg, setShowClassEditDlg] = useState(false);
+    const [showNewUnitDlg, setShowNewUnitDlg] = useState(false);
 
     const [unitDisplayKey, setUnitDisplayKey] = useState(0);
 
@@ -65,7 +68,7 @@ const GfUnitsPages = () => {
         if (!unit)
             return [];
         
-        return avgScores.filter( avg => unit.formativeTitles.includes(avg.formativeTitle) && unit.classes.includes(avg.className));
+        return avgScores.filter( avg => unit.formativeTitles?.includes(avg.formativeTitle) && unit.classes?.includes(avg.className));
     }
 
    
@@ -150,8 +153,32 @@ const GfUnitsPages = () => {
     }
 
 
-    const unitNewDlgShow = () => {}
+    const unitNewDlgShow = () => {
+        setShowNewUnitDlg(true);
+    }
 
+    const unitNewDlgOK = async (newUnit) => {
+        console.log("Adding:", newUnit);
+
+        const {data, error} = await supabase.from("gf_units")
+                                            .insert({...newUnit, classes: [], formativeTitles: []})
+                                            .select();
+
+
+        error && console.error(error);
+
+        console.log("New Unit:", data);
+
+        //close the dlg
+        setShowNewUnitDlg(false);
+
+        setUnits([data[0], ...units]);
+        setSelectedUnit(data[0]);
+    }
+
+    const unitNewDlgCancel = () => {
+        setShowNewUnitDlg(false);
+    }
 
     return <>
         <GfUnitsContext.Provider value={
@@ -159,7 +186,9 @@ const GfUnitsPages = () => {
                 unitDlg : {
                     selectUnit,
                     selectedUnit,
-                    unitNewDlgShow
+                    unitNewDlgShow,
+                    unitNewDlgOK,
+                    unitNewDlgCancel
                 },
                 formativeDlg: {
                     
@@ -205,7 +234,10 @@ const GfUnitsPages = () => {
             <ClassPickDlg header="Header"
                 visible={showClassEditDlg} 
                 style={{ width: '70vw' }} />
-        
+            
+            <NewUnitDlg header="Header"
+                visible={showNewUnitDlg}
+                style={{ width: "70vw"}} />        
 
         </div>
 
