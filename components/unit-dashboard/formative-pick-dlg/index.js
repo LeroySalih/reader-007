@@ -23,6 +23,7 @@ const FormativePickDlg = ({ visible, style}) => {
         formativeEditDlgOK(selectedUnit, currentFormatives)
     }
 
+    /* Render the footer in the dlg */
     const renderFooter = () => {
         return (
             <div>
@@ -36,7 +37,6 @@ const FormativePickDlg = ({ visible, style}) => {
     return <>
     <Dialog header={`Formatives for ${selectedUnit?.title}`} visible={visible} style={style} footer={renderFooter()} onHide={formativeEditDlgCancel}>
         <FormativePickList unit={selectedUnit} onFormativesChanged={handleFormativesChanged}/>
-        
     </Dialog>
     
     </>
