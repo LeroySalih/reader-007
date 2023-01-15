@@ -14,7 +14,7 @@ const UnitDisplay = ({seed, testProp, avgScores, handleFormativeClick}) => {
         if (!unit || !avgScores)
             return {}
 
-        return unit.formativeTitles.reduce((prev, curr) => {prev[curr] = (
+        return unit.formativeTitles?.reduce((prev, curr) => {prev[curr] = (
             unit.classes.map((c, i) => ({[c]: (avgScores.filter(avg => avg.className == c && avg.formativeTitle == curr)[0]?.avg_score)}))
         ); return prev; }, {})
     };

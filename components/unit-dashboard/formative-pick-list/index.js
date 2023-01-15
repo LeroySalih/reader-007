@@ -7,7 +7,7 @@ const FormativePickList = ({unit, onFormativesChanged}) => {
 
 
     console.log("unit", unit)
-    const [target, setTarget] = useState(unit?.formativeTitles.map(t => ( {formativeTitle: t}) ));
+    const [target, setTarget] = useState(unit?.formativeTitles?.map(t => ( {formativeTitle: t}) ));
     const [source, setSource] = useState([]);
 
     

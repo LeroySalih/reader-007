@@ -68,7 +68,7 @@ const GfUnitsPages = () => {
         if (!unit)
             return [];
         
-        return avgScores.filter( avg => unit.formativeTitles.includes(avg.formativeTitle) && unit.classes.includes(avg.className));
+        return avgScores.filter( avg => unit.formativeTitles?.includes(avg.formativeTitle) && unit.classes?.includes(avg.className));
     }
 
    
@@ -157,8 +157,23 @@ const GfUnitsPages = () => {
         setShowNewUnitDlg(true);
     }
 
-    const unitNewDlgOK = () => {
+    const unitNewDlgOK = async (newUnit) => {
+        console.log("Adding:", newUnit);
+
+        const {data, error} = await supabase.from("gf_units")
+                                            .insert({...newUnit, classes: [], formativeTitles: []})
+                                            .select();
+
+
+        error && console.error(error);
+
+        console.log("New Unit:", data);
+
+        //close the dlg
         setShowNewUnitDlg(false);
+
+        setUnits([data[0], ...units]);
+        setSelectedUnit(data[0]);
     }
 
     const unitNewDlgCancel = () => {
@@ -219,7 +234,7 @@ const GfUnitsPages = () => {
             <ClassPickDlg header="Header"
                 visible={showClassEditDlg} 
                 style={{ width: '70vw' }} />
-            {console.log("showNewUnitDlg",showNewUnitDlg )}
+            
             <NewUnitDlg header="Header"
                 visible={showNewUnitDlg}
                 style={{ width: "70vw"}} />        
