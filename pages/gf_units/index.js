@@ -13,6 +13,7 @@ import FormativePickDlg from '../../components/unit-dashboard/formative-pick-dlg
 import ClassPickDlg from '../../components/unit-dashboard/class-pick-dlg';
 import NewUnitDlg from '../../components/unit-dashboard/new-unit-dlg';
 import { CallEnd } from '@mui/icons-material';
+import PupilScoresForUnit from '../../components/unit-dashboard/pupil-scores-for-unit';
 const loadUnits = async (setUnits, setSelectedUnit) => {
 
     const {data, error} = await supabase
@@ -225,6 +226,8 @@ const GfUnitsPages = () => {
             <FormativeDetails 
                 formativeTitle={selectedFormativeTitle} 
                 classId={selectedClassId}/>
+
+            <PupilScoresForUnit />
 
             <FormativePickDlg header="Header" 
                 visible={showFormativeEditDlg} 
