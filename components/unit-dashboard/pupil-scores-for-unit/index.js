@@ -1,11 +1,12 @@
 import { useEffect, useState } from "react";
 import { supabase } from "../../../config/supabase";
+import { TabView, TabPanel } from 'primereact/tabview';
 
 const PupilScoresForUnit = () => {
 
     const [pupilScores, setPupilScores] = useState([]);
     const [formativeTitles, setFormativeTitles] = useState([]);
-
+    const [activeIndex, setActiveIndex] = useState(0);
 
     useEffect(()=> {
         const loadData = async () => {
@@ -56,20 +57,17 @@ const PupilScoresForUnit = () => {
 
 
     }
-    return <>Pupil Scores for Unit
-        <div className="display-grid">
-            {/* Display Top Row */}
-            <div>Name:</div>
-            <div>Score:</div>
-            {Object.keys(formativeTitles).map((ft, i) => <div key={i}>{ft}</div>)}
+    return <>
+    <TabView activeIndex={activeIndex} onTabChange={(e) => setActiveIndex(e.index)}>
             
-            {
-                Object.keys(pupilScores).map((c, i) => <DisplayClass key={i} classData={{title: c, data: pupilScores[c]}} formativeTitles={formativeTitles}/>)
-            }
+            {Object.keys(pupilScores).map((ps, i) => <TabPanel key={i} header={ps}>
+            <div className="display-grid">
+            <DisplayClass key={i} classData={{title: ps, data: pupilScores[ps]}} formativeTitles={formativeTitles}/>
+            </div>
+            </TabPanel>)}
             
             
-            
-        </div>
+        </TabView>
 
         
         <style jsx="true">{`
@@ -99,9 +97,12 @@ const DisplayClass = ({classData, formativeTitles}) => {
 
     const {title, data: pupils} = classData;
     return <>{[
-        <div className="class-title" key="title">{title}</div>,
-        <div className="class-title" key="title-spacer">&nbsp;</div>,
-        ...(Object.keys(formativeTitles).map((ft, i) => <><div className="class-title">&nbsp;</div></>)),
+        
+        
+        <div>Name:</div>,
+        <div>Score:</div>,
+        Object.keys(formativeTitles).map((ft, i) => <div key={i}>{ft}</div>),
+
         
         ...(Object.keys(pupils)
             .sort((a, b) => pupilScore(pupils[a]) > pupilScore(pupils[b]) ? 1 : -1)

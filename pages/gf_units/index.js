@@ -6,7 +6,7 @@ import { DateTime } from 'luxon';
 import ProgressChart from '../../components/progress-chart';
 
 import UnitSelector from '../../components/unit-dashboard/unit-selector';
-import UnitDisplay from '../../components/unit-dashboard/unit-display';
+import UnitDisplayScores from '../../components/unit-dashboard/unit-display-scores';
 import FormativeDetails from '../../components/unit-dashboard/formative-details';
 import GfUnitsContext from '../../components/gf-units-context';
 import FormativePickDlg from '../../components/unit-dashboard/formative-pick-dlg';
@@ -14,6 +14,9 @@ import ClassPickDlg from '../../components/unit-dashboard/class-pick-dlg';
 import NewUnitDlg from '../../components/unit-dashboard/new-unit-dlg';
 import { CallEnd } from '@mui/icons-material';
 import PupilScoresForUnit from '../../components/unit-dashboard/pupil-scores-for-unit';
+import { Sidebar } from 'primereact/sidebar';
+import { Button } from '@mui/material';
+
 const loadUnits = async (setUnits, setSelectedUnit) => {
 
     const {data, error} = await supabase
@@ -50,6 +53,8 @@ const GfUnitsPages = () => {
     const [showFormativeEditDlg, setShowFormativeEditDlg] = useState(false);
     const [showClassEditDlg, setShowClassEditDlg] = useState(false);
     const [showNewUnitDlg, setShowNewUnitDlg] = useState(false);
+
+    const [sideBarVisible, setSideBarVisible] = useState(false);
 
     const [unitDisplayKey, setUnitDisplayKey] = useState(0);
 
@@ -205,32 +210,37 @@ const GfUnitsPages = () => {
             }
         }>
         <div className="page">
-        <h1>Units Dashboard</h1>
+        <h1>Units Dashboard for {selectedUnit?.title}
+            <Button onClick={()=> {setSideBarVisible(true)}} >Change</Button>
+        </h1>
         <div className="page-layout">
             
-            <UnitSelector 
-                units={units} 
-                avgScores={avgScores}
-                unit={selectedUnit}
-                
-                />
+            <div>
+                <h3>History + Current Charts</h3>
+            </div>
+            <div>
 
-            
-            <UnitDisplay
+            <h3>% Scores for Unit</h3>
+            <UnitDisplayScores
                 testProp="hello"
                 seed={unitDisplayKey} 
                 unit={selectedUnit} 
                 avgScores={getAvgScoresForUnit(selectedUnit)} 
                 handleFormativeClick={handleFormativeClick}/>
-            
-            <FormativeDetails 
-                formativeTitle={selectedFormativeTitle} 
-                classId={selectedClassId}/>
+            </div>
+
+            <div>
+                <h3>% Completion Goes Here</h3>
+            </div>
             
             </div>
             <div>
 
-            <PupilScoresForUnit />
+            <div>
+                <h3>Pupil Scores for Unit</h3>
+                <PupilScoresForUnit />
+            </div>
+            
 
             <FormativePickDlg header="Header" 
                 visible={showFormativeEditDlg} 
@@ -243,7 +253,19 @@ const GfUnitsPages = () => {
             
             <NewUnitDlg header="Header"
                 visible={showNewUnitDlg}
-                style={{ width: "70vw"}} />        
+                style={{ width: "70vw"}} />    
+
+
+            <Sidebar 
+                visible={sideBarVisible} 
+                onHide={() => setSideBarVisible(false)}>
+                <UnitSelector 
+                units={units} 
+                avgScores={avgScores}
+                unit={selectedUnit}
+                
+                />
+            </Sidebar>    
 
         </div>
 
