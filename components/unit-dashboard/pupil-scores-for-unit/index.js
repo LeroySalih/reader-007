@@ -1,6 +1,8 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useContext } from "react";
 import { supabase } from "../../../config/supabase";
 import { TabView, TabPanel } from 'primereact/tabview';
+import GfUnitsContext from "../../gf-units-context";
+import { Tooltip } from 'primereact/tooltip';
 
 const PupilScoresForUnit = () => {
 
@@ -8,12 +10,17 @@ const PupilScoresForUnit = () => {
     const [formativeTitles, setFormativeTitles] = useState([]);
     const [activeIndex, setActiveIndex] = useState(0);
 
+    const {unitDlg} = useContext(GfUnitsContext);
+    const {selectedUnit} = unitDlg;
+
     useEffect(()=> {
         const loadData = async () => {
+            if (!selectedUnit) return;
+
             const {data, error} = await supabase.from("gf_pupil_scores_for_unit")
                                                 .select()
-                                                .in("className", ['8A-Science', '8B-Science', '8C-Science'])
-                                                .like("formativeTitle", '8J%')        
+                                                .in("className", selectedUnit.classes)
+                                                .in("formativeTitle", selectedUnit.formativeTitles)        
             error && console.error(error);
 
             const tData = transformData(data)
@@ -30,7 +37,7 @@ const PupilScoresForUnit = () => {
             }
 
         loadData();
-    }, [])
+    }, [selectedUnit])
 
 
     const transformData = (data) => {
@@ -101,14 +108,14 @@ const DisplayClass = ({classData, formativeTitles}) => {
         
         <div>Name:</div>,
         <div>Score:</div>,
-        Object.keys(formativeTitles).map((ft, i) => <div key={i}>{ft}</div>),
+        Object.keys(formativeTitles).map((ft, i) => <div  key={i} >{ft.slice(0,7)}</div>),
 
         
         ...(Object.keys(pupils)
             .sort((a, b) => pupilScore(pupils[a]) > pupilScore(pupils[b]) ? 1 : -1)
             .map((cd, i) => [
             <div key={`pupil_name_${i}`} className="pupil-name">{cd}</div>,
-            <div key="pupil-name" className="pupil-name">[{pupilScore(pupils[cd])}%]</div>,
+            <div key="pupil-name" className="pupil-name">[{pupilScore(pupils[cd]).toFixed(0)}%]</div>,
             ...(Object.values(pupils[cd]).map((p, i) => <div key={i} className="pupil-score">{p}</div>))
         ])),
     ]}
