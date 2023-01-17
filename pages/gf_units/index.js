@@ -226,6 +226,9 @@ const GfUnitsPages = () => {
             <FormativeDetails 
                 formativeTitle={selectedFormativeTitle} 
                 classId={selectedClassId}/>
+            
+            </div>
+            <div>
 
             <PupilScoresForUnit />
 
