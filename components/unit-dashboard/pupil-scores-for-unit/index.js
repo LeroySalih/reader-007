@@ -106,8 +106,8 @@ const DisplayClass = ({classData, formativeTitles}) => {
     return <>{[
         
         
-        <div>Name:</div>,
-        <div>Score:</div>,
+        <div key={`${classData.title}_1`}>Name:</div>,
+        <div key={`${classData.title}_2`}>Score:</div>,
         Object.keys(formativeTitles).map((ft, i) => <div  key={i} >{ft.slice(0,7)}</div>),
 
         
