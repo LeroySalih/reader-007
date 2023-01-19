@@ -7,6 +7,7 @@ import ProgressChart from '../../components/progress-chart';
 
 import UnitSelector from '../../components/unit-dashboard/unit-selector';
 import UnitDisplayScores from '../../components/unit-dashboard/unit-display-scores';
+
 import FormativeDetails from '../../components/unit-dashboard/formative-details';
 import GfUnitsContext from '../../components/gf-units-context';
 import FormativePickDlg from '../../components/unit-dashboard/formative-pick-dlg';
@@ -29,6 +30,35 @@ const loadUnits = async (setUnits, setSelectedUnit) => {
     data.length > 0 && setSelectedUnit(data.sort((a, b) => a.title > b.title ? 1 : -1)[0])
 }
 
+
+const transformCompletion = (data) => {
+    const tmp = data.reduce((prev, curr) => {
+
+        prev[curr.formativetitle] = prev[curr.formativetitle] || {}
+        prev[curr.formativetitle][curr.classes] = 1 - curr.not_completed_pct;
+
+        return prev;
+    }, {});
+
+    return tmp;
+}
+
+const load_pupil_completion_for_unit = async (unit, setPupilCompletion) => {
+
+    
+    if (!unit)
+        return;
+
+    const {data, error} = await supabase.rpc("gf_pupil_completion_for_unit", { classnames: unit?.classes, formativetitles: unit?.formativeTitles });
+
+    error && console.error("error", error);
+
+    console.log("load_pupil_completion_for_unit", transformCompletion(data), error)
+
+    setPupilCompletion(transformCompletion(data));
+
+}
+
 const loadAvgScores = async (setUnits) => {
 
     const {data, error} = await supabase
@@ -45,6 +75,7 @@ const GfUnitsPages = () => {
     const [units, setUnits] = useState([]);
     const [avgScores, setAvgScores] = useState([])
     const [avgScore, setAvgScore] = useState(0);
+    const [pupilCompletionForUnit, setPupilCompletionForUnit] = useState([]);
 
     const [selectedUnit, setSelectedUnit] = useState(null);
     const [selectedFormativeTitle, setSelectedFormativeTitle] = useState(null);
@@ -69,6 +100,16 @@ const GfUnitsPages = () => {
         
 
     },[]);
+
+    useEffect(()=> {
+
+        (async () => {
+
+            // await load_pupil_completion_for_unit(selectedUnit, setPupilCompletionForUnit);
+
+        })()
+
+    }, [selectedUnit]);
 
     const getAvgScoresForUnit = (unit) => {
         if (!unit)
@@ -229,9 +270,7 @@ const GfUnitsPages = () => {
                 handleFormativeClick={handleFormativeClick}/>
             </div>
 
-            <div>
-                <h3>% Completion Goes Here</h3>
-            </div>
+            
             
             </div>
             <div>
@@ -280,7 +319,7 @@ const GfUnitsPages = () => {
 
             .page-layout {
                 display: grid;
-                grid-template-columns: 1fr 1fr 1fr;
+                grid-template-columns: 1fr 1fr;
                 grid-gap: 3rem;
             }
 
