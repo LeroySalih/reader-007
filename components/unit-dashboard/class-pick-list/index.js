@@ -10,7 +10,7 @@ const ClassPickList = ({unit, onClassesChange}) => {
 
     
     const onChange = (e) =>{
-        console.log(e);
+        
         setSource(e.source);
         setTarget(e.target);
         onClassesChange(e.target?.map(c => c.className));
@@ -23,7 +23,7 @@ const ClassPickList = ({unit, onClassesChange}) => {
                                     .from("vw_class_list")
                                     .select()
             error && console.error(error);
-            console.log(data)
+            
             setSource(data.filter(f => 
                 target?.filter(t => t.className === f.className).length === 0
                 )

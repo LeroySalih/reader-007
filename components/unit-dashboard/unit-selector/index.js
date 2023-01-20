@@ -88,7 +88,6 @@ const UnitSelector = ({units, avgScores, handleSelectUnit, handleNewUnit}) => {
 
     const handleShowNewUnitDlg = async () => {
 
-        console.log("handleShowNewUnitDlg")
         unitNewDlgShow();
     }
 

@@ -34,8 +34,7 @@ const UnitDisplay = ({seed, testProp, avgScores, handleFormativeClick}) => {
 
     }
 
-    console.log("unit", selectedUnit);
-
+    
     if (!selectedUnit)
         return <h1>Loading</h1>
 

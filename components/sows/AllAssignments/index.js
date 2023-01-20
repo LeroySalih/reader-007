@@ -93,9 +93,9 @@ const rows = [
 
 const AssignmentsForClass = ({assignments, asc, onSelectionChange}) => {
 
-    console.log("Assignments", assignments)
+    
     const assignmentArray = Object.values(assignments).reduce((lst, assignmentList) => {
-        //console.log(lst, assignmentArray)
+        
         return lst.concat(assignmentList.map(a => ({
             ...a, 
             id: a.assignmentId,
@@ -105,7 +105,7 @@ const AssignmentsForClass = ({assignments, asc, onSelectionChange}) => {
         // return lst;
     }, []).sort((a, b) => a.workWeek < b.workWeek ? 1 : -1);
 
-    //console.log("AssignmentArray", assignmentArray);
+    
 
     return  <>    
             <Box sx={{ height: 800, width: '100%' }}>

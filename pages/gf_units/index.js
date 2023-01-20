@@ -25,7 +25,6 @@ const loadUnits = async (setUnits, setSelectedUnit) => {
                         .select()
                         
 
-    console.log("data", data)
     setUnits(data.sort((a, b) => a.title > b.title ? 1 : -1));
     data.length > 0 && setSelectedUnit(data.sort((a, b) => a.title > b.title ? 1 : -1)[0])
 }
@@ -53,8 +52,6 @@ const load_pupil_completion_for_unit = async (unit, setPupilCompletion) => {
 
     error && console.error("error", error);
 
-    console.log("load_pupil_completion_for_unit", transformCompletion(data), error)
-
     setPupilCompletion(transformCompletion(data));
 
 }
@@ -66,7 +63,6 @@ const loadAvgScores = async (setUnits) => {
                         .select()
                         
 
-    console.log("data", data)
     setUnits(data);
 }
 
@@ -131,19 +127,16 @@ const GfUnitsPages = () => {
     }
 
     const formativeEditDlgShow = (unit) => {
-        console.log("Showing Dlg");
         setSelectedUnit(unit);
         setShowFormativeEditDlg(true);
     }
 
     const formativeEditDlgOK = async (unit, formatives) => {
-        console.log("Saving...", unit.title, formatives.length)
         setShowFormativeEditDlg(false);
 
         const updateObj = Object.assign({}, unit, {formativeTitles: formatives})
 
-        console.log("updateObj", updateObj);
-
+        
         const {data, error} = await supabase.from("gf_units")
                         .update(updateObj)
                         .eq("id", updateObj.id);
@@ -165,7 +158,6 @@ const GfUnitsPages = () => {
 
     const classEditDlgShow = (unit) => {
 
-        console.log("Showing Dlg", unit);
         setSelectedUnit(unit);
         setShowClassEditDlg(true);
 
@@ -173,13 +165,11 @@ const GfUnitsPages = () => {
 
     const classEditDlgOK = async (unit, classes) => {
 
-        console.log("Saving...", unit.title, classes.length)
         setShowClassEditDlg(false);
 
         const updateObj = Object.assign({}, unit, {classes})
 
-        console.log("updateObj", updateObj);
-
+        
         const {data, error} = await supabase.from("gf_units")
                         .update(updateObj)
                         .eq("id", updateObj.id);
@@ -205,8 +195,7 @@ const GfUnitsPages = () => {
     }
 
     const unitNewDlgOK = async (newUnit) => {
-        console.log("Adding:", newUnit);
-
+        
         const {data, error} = await supabase.from("gf_units")
                                             .insert({...newUnit, classes: [], formativeTitles: []})
                                             .select();
@@ -214,7 +203,6 @@ const GfUnitsPages = () => {
 
         error && console.error(error);
 
-        console.log("New Unit:", data);
 
         //close the dlg
         setShowNewUnitDlg(false);

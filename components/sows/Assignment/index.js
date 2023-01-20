@@ -42,7 +42,7 @@ const Assignment = ({assignment, week}) => {
     const handleOpen = async () => {
         const {data, error} = await supabase.from("Assignments").select().eq("id", assignment[0].assignmentId)
 
-     //   data != undefined && console.log("data", data)
+     
         error != undefined && console.error("Assignemnt", assignment[0], error);
 
         setCounter(prev => prev + 1)

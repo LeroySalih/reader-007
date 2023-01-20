@@ -6,13 +6,13 @@ import { supabase } from '../../../config/supabase';
 const FormativePickList = ({unit, onFormativesChanged}) => {
 
 
-    console.log("unit", unit)
+    
     const [target, setTarget] = useState(unit?.formativeTitles?.map(t => ( {formativeTitle: t}) ));
     const [source, setSource] = useState([]);
 
     
     const onChange = (e) =>{
-        console.log(e);
+        
         setSource(e.source);
         setTarget(e.target);
         onFormativesChanged(e.target?.map(t => t.formativeTitle));
@@ -25,7 +25,7 @@ const FormativePickList = ({unit, onFormativesChanged}) => {
                                     .from("vw_formative_list")
                                     .select()
             error && console.error(error);
-            console.log(data)
+            
             setSource(data.filter(f => 
                 target?.filter(t => t.formativeTitle === f.formativeTitle).length === 0
                 )
