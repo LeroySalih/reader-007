@@ -53,7 +53,6 @@ const UploadPage = () => {
             const fName = inputFile.name.split(".")[0]
             
             const dtUploadDate = DateTime.fromISO(fName)
-            console.log(fName, dtUploadDate.toISO())
             // If input type is correct set the state
             setFile(inputFile);
             // const tmpFileDate = new DateTime(calcUploadDate(inputFile.name))
@@ -178,7 +177,6 @@ const UploadPage = () => {
         // query was successful, but no rows were returned, 
         // so we will update the db.
         if (data && data.length === 0) {
-            //console.log("updateObj", updateObj)
             const {data: upsertCheck, error: upsertError} = await supabase.from(TABLE_NAME).upsert(updateObj)
             upsertError && console.error(upsertError);
             console.log(`Added ${updateObj["pupilName"]}`)

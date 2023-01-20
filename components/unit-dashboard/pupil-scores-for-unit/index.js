@@ -28,7 +28,6 @@ const PupilScoresForUnit = () => {
 
             const firstClassKey = Object.keys(tData)[0]
             const firstPupilKey = Object.keys(tData[firstClassKey])[0]
-            console.log("fTitles",firstClassKey, firstPupilKey, tData[firstClassKey][firstPupilKey])
             const formativeTitles = tData[firstClassKey][firstPupilKey];
 
             setFormativeTitles(formativeTitles);
@@ -98,7 +97,6 @@ const DisplayClass = ({classData, formativeTitles}) => {
     const pupilScore = (pupil) => {
         const sum = (Object.values(pupil).reduce((prev, curr) => prev + parseInt(curr), 0))
         const count = Object.values(pupil).length
-        console.log(pupil, sum , count)
         return sum /  count;
     }
 

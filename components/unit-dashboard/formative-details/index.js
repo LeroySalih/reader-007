@@ -6,7 +6,7 @@ import { Column} from 'primereact/column';
 
 const loadFormativeData = async (setFormativeData, formativetitle, classid) => {
 
-    console.log({formativetitle, classid});
+    
 
     if (!formativetitle || !classid)
         setFormativeData(null);
@@ -15,7 +15,7 @@ const loadFormativeData = async (setFormativeData, formativetitle, classid) => {
 
     error && console.error("loadFormativeData", error);
 
-    console.log("Data", data)
+    
     setFormativeData(data);
 
     return data;

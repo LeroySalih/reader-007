@@ -34,7 +34,6 @@ export const graphContext = {
 
 export const getUrlFromContext = async (ctx) => {
 
-    // console.log("getUrlFromContext", graphUrl(ctx), ctx)
     return  graphUrl(ctx)
 
 
@@ -70,8 +69,7 @@ export async function callMsGraph(accessToken,  endPoint=graphConfig.graphMeEndp
     };
 
    
-    // console.log("endPoint", endPoint)
-
+    
     return fetch(endPoint, options)
         .then(async (response) => {
             

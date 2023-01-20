@@ -18,8 +18,7 @@ export default async (req, res) => {
 
         error != undefined && console.error("Error", error);
 
-        // console.log("Users", users);
-
+        
         const result = await nodeoutlook.sendEmail({
             auth: {
                 user: process.env.NEXT_PUBLIC_EMAIL_USER,
@@ -35,9 +34,6 @@ export default async (req, res) => {
 
         res.status(200).json({ msg: 'Service UP', method: 'POST', to });
 
-
-
-        // console.log ("Result", result);
     }
     
 }
