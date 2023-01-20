@@ -5,7 +5,12 @@ import {supabase} from '../../config/supabase';
 
 import React, { useState, useEffect } from "react";
 import useTerminalDisplay from "../../components/terminal-display";
-
+import {Button} from 'primereact/button';
+import {FileUpload} from 'primereact/fileupload';
+import {Calendar} from 'primereact/calendar';
+import {InputText} from 'primereact/inputtext';
+import { CompressOutlined } from "@mui/icons-material";
+import {DateTime} from 'luxon';
 const allowedExtensions = ["csv"];
 
 process.env.NEXT_PUBLIC_DEBUG == "true" ? console.log("USING DEBUG SETTINGS") : console.log("USING PRODUCTION SETTINGS")
@@ -29,6 +34,7 @@ const UploadPage = () => {
      
     // It will store the file uploaded by the user
     const [file, setFile] = useState("");
+    const [fileDate, setFileDate] = useState(null);
 
     // This function will be called when
     // the file input changes
@@ -36,29 +42,25 @@ const UploadPage = () => {
     const handleFileChange = (e) => {
         setError("");
         clearMessages();
+        addMessage(`File Date: ${e.target.files[0].name}`);
         
-         // reset the upload
-         setProgress(0);
+        // reset the upload
+        setProgress(0);
 
         // Check if user has entered the file
         if (e.target.files.length) {
             const inputFile = e.target.files[0];
-             
-            // Check the file extensions, if it not
-            // included in the allowed extensions
-            // we show the error
-            const fileExtension = inputFile?.type.split("/")[1];
-            if (!allowedExtensions.includes(fileExtension)) {
-                setError("Please input a csv file");
-                return;
-            }
- 
+            const fName = inputFile.name.split(".")[0]
+            
+            const dtUploadDate = DateTime.fromISO(fName)
+            console.log(fName, dtUploadDate.toISO())
             // If input type is correct set the state
             setFile(inputFile);
-            checkCount(calcUploadDate(inputFile.name));
+            // const tmpFileDate = new DateTime(calcUploadDate(inputFile.name))
+            setFileDate(dtUploadDate.toISO());
+            checkCount(dtUploadDate.toISO());
         }
     };
-
     
     const handleParse = async () => {
          
@@ -86,7 +88,7 @@ const UploadPage = () => {
                 const uploadData = processData(file, parsedData);
 
                 // Check the number of items uploaded.
-                checkCount (calcUploadDate(file.name));
+                checkCount (fileDate);
 
                 // Upload File to Supabase Bucket
                 uploadFile(file)
@@ -103,6 +105,9 @@ const UploadPage = () => {
 
     useEffect(() => {
         
+
+        // setFileDate(DateTime.now());
+
         /* detect auth changes */
         supabase.auth.onAuthStateChange((event, session) => {
             console.log(event, session)
@@ -134,9 +139,8 @@ const UploadPage = () => {
 
     }, [])
 
-    
 
-   
+    /*
     const calcUploadDate = (fName) => {
 
         
@@ -158,6 +162,7 @@ const UploadPage = () => {
         return new Date(dtStr);
 
     }
+    */
 
     const writeToSupabase = async (updateObj) => {
 
@@ -186,15 +191,19 @@ const UploadPage = () => {
 
     
 
-    const checkCount = async (dtFileUploadDate) => {
+    const checkCount = async (fileDate) => {
+
+        addMessage(`Checking for ${fileDate}`);
+        console.log("FileDate", fileDate);
+
         const {data, error} = await supabase.from(TABLE_NAME)
                                         .select()
-                                        .eq("uploadDate", dtFileUploadDate.toISOString())
+                                        .eq("uploadDate", fileDate)
                                         
         error && console.error("Error", error);
 
         
-        addMessage(`${data?.length} for this ${dtFileUploadDate.toISOString()}`)
+        addMessage(`${data?.length} for this ${fileDate}`)
         console.log(data) 
     }
 
@@ -202,9 +211,9 @@ const UploadPage = () => {
         
         
 
-        const dtFileUploadDate = calcUploadDate(file.name);
+        // const dtFileUploadDate = calcUploadDate(file.name);
         
-        addMessage(`Starting Upload for ${dtFileUploadDate}`);
+        addMessage(`Starting Upload for ${file.name}`);
 
         const keys = Object.keys(data);
 
@@ -224,7 +233,7 @@ const UploadPage = () => {
                         className : upload["section"],
                         pupilName : upload["student"],
                         score: score.slice(0, score.length - 1),
-                        uploadDate: dtFileUploadDate
+                        uploadDate: fileDate
                     };
 
                     writeToSupabase(uploadObject);
@@ -248,7 +257,7 @@ const UploadPage = () => {
         const { data: fileData, error: fileError } = await supabase
         .storage
         .from('data-files')
-        .upload(`/private/${calcUploadDate(file.name).toISOString()}.csv`, avatarFile, {
+        .upload(`/private/${file.name})}.csv`, avatarFile, {
             cacheControl: '3600',
             upsert: true
         });
@@ -259,10 +268,17 @@ const UploadPage = () => {
 
     }
 
+
+    
+
     return <div>
     <div>
         <div className="card">
-            
+            <div>
+                <div>FileDate: {JSON.stringify(fileDate, null, 2)}</div>
+                
+
+            </div>
             <div className="card-title">Enter CSV File</div>    
             
             <input
@@ -272,7 +288,8 @@ const UploadPage = () => {
                 type="File"
             />
     
-            <button onClick={handleParse}>Parse</button>
+            <Button onClick={handleParse}>Parse</Button>
+
             <div>
                 <ProgressBar value={(progress / maxProgress) * 100} />
             </div>
