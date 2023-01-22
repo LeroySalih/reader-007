@@ -34,6 +34,25 @@ const UnitDisplay = ({seed, testProp, avgScores, handleFormativeClick}) => {
 
     }
 
+    const calcClassAvg = (avgScores) => {
+        
+        return avgScores.reduce((prev, curr) => {
+
+            if (prev[curr.className] === undefined) {
+                (prev[curr.className] = {sum: 0, count: 0})
+            }
+            
+            prev[curr.className] = {
+                    sum : prev[curr.className].sum + curr.avg_score, 
+                    count : prev[curr.className].count + 1}
+
+            console.log(prev)
+            return prev;
+
+        }, {})
+         
+    }
+
     
     if (!selectedUnit)
         return <h1>Loading</h1>
@@ -54,14 +73,29 @@ const UnitDisplay = ({seed, testProp, avgScores, handleFormativeClick}) => {
                     {displayObj[k].map((avg, i) => <td key={i} className={`avg-score ${selectedFormativeTitle == k && selectedClassId == Object.keys(avg)[0] ? 'selected' : ''}`} onClick={()=> {handleClick( k,Object.keys(avg)[0] )}}>{Object.values(avg)[0]?.toFixed(2)}</td>)}  
                     </tr>)
             }
+            <tr ><td className="totals"></td>
+            {
+                Object.keys(calcClassAvg(avgScores))
+                      .sort((a, b) => a > b ? 1 : 1)
+                      
+                      .map((a, i) => <td key={i} className="avg-score totals">{(calcClassAvg(avgScores)[a].sum / calcClassAvg(avgScores)[a].count).toFixed(2)}%</td>)
+
+            }</tr>
             
         </table>
+       
 
         
         <style jsx="true">{`
 
             .class-title {
                 font-size: 0.8rem;
+            }
+
+            .totals {
+                border-style : double none none none;
+                border-top :  solid 1px silver;
+                
             }
 
             .formative-title {
