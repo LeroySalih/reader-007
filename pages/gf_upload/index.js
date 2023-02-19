@@ -34,6 +34,8 @@ const UploadPage = () => {
      
     // It will store the file uploaded by the user
     const [file, setFile] = useState("");
+    const [uploadDate, setUploadDate] = useState(null);
+
     const [fileDate, setFileDate] = useState(null);
 
     // This function will be called when
@@ -50,14 +52,14 @@ const UploadPage = () => {
         // Check if user has entered the file
         if (e.target.files.length) {
             const inputFile = e.target.files[0];
-            const fName = inputFile.name.split(".")[0]
+            // const fName = inputFile.name.split(".")[0]
             
-            const dtUploadDate = DateTime.fromISO(fName)
+            //const dtUploadDate = DateTime.fromISO(fName)
             // If input type is correct set the state
             setFile(inputFile);
             // const tmpFileDate = new DateTime(calcUploadDate(inputFile.name))
-            setFileDate(dtUploadDate.toISO());
-            checkCount(dtUploadDate.toISO());
+            // setFileDate(dtUploadDate.toISO());
+            // checkCount(dtUploadDate.toISO());
         }
     };
     
@@ -87,7 +89,7 @@ const UploadPage = () => {
                 const uploadData = processData(file, parsedData);
 
                 // Check the number of items uploaded.
-                checkCount (fileDate);
+                // checkCount (fileDate);
 
                 // Upload File to Supabase Bucket
                 uploadFile(file)
@@ -163,55 +165,40 @@ const UploadPage = () => {
     }
     */
 
+    
     const writeToSupabase = async (updateObj) => {
 
-        const {data, error} = await supabase.from(TABLE_NAME)
-                                      .select()
-                                      .eq("formativeTitle", updateObj["formativeTitle"])
-                                      .eq("className", updateObj["className"])
-                                      .eq("pupilName", updateObj["pupilName"])
-                                      .eq("score", updateObj["score"])
+        // hydrate updateObjects
+        const updateObjs = Object.keys(updateObj).map((k, i) => {
+            const {formativeTitle, className, pupilName} = JSON.parse(k);
+            const score = updateObj[k]
 
-        error && console.error("Error", error);
+            return {formativeTitle, className, pupilName, score}
+        });
 
-        // query was successful, but no rows were returned, 
-        // so we will update the db.
-        if (data && data.length === 0) {
-            const {data: upsertCheck, error: upsertError} = await supabase.from(TABLE_NAME).upsert(updateObj)
-            upsertError && console.error(upsertError);
-            console.log(`Added ${updateObj["pupilName"]}`)
-            addMessage(`Added ${updateObj["pupilName"]}`)
-        } else {
-            addMessage(`Skipping ${updateObj["pupilName"]}`)
-        }
+        console.log("UpdateObjs", updateObj, updateObjs)
+        
+        const {data: upsertCheck, error: upsertError} = await supabase
+                    .from(`gf_submissions.current`)
+                    .upsert(updateObjs);
+            
+        upsertError && addMessage(`Error ${JSON.stringify(upsertError)} `)
+        
+        upsertCheck && console.log(JSON.stringify(upsertCheck));
+        upsertCheck && addMessage(`Upload to DB Completed]`)
+            
 
     }
 
     
 
-    const checkCount = async (fileDate) => {
-
-        addMessage(`Checking for ${fileDate}`);
-        console.log("FileDate", fileDate);
-
-        const {data, error} = await supabase.from(TABLE_NAME)
-                                        .select()
-                                        .eq("uploadDate", fileDate)
-                                        
-        error && console.error("Error", error);
-
-        
-        addMessage(`${data?.length} for this ${fileDate}`)
-        console.log(data) 
-    }
+    
 
     const processData = (file, data) => {
         
-        
-
         // const dtFileUploadDate = calcUploadDate(file.name);
         
-        addMessage(`Starting Upload for ${file.name}`);
+        addMessage(`Starting Upload for ${uploadDate}`);
 
         const keys = Object.keys(data);
 
@@ -219,43 +206,67 @@ const UploadPage = () => {
         
         setProgress(0);
         setMaxProgress(data.length);
+
+        const upsertObject = {}
         
         for (const upload of data){
-            for (var c = 5; c < Object.keys(upload).length; c++){
 
-                const score = upload[Object.keys(upload)[c]];
+            if (upload["section"] != "" && upload["section"] != null &&
+                upload["student"] != "" && upload["student"] != null
+            ) {
 
-                if (score != '' && upload["section"] != '' && upload["student"] != '' && Object.keys(upload)[c] != ''){
-                    const uploadObject = {
-                        formativeTitle : Object.keys(upload)[c], 
-                        className : upload["section"],
-                        pupilName : upload["student"],
-                        score: score.slice(0, score.length - 1),
-                        uploadDate: fileDate
-                    };
+                for (var c = 5; c < Object.keys(upload).length; c++){
 
-                    writeToSupabase(uploadObject);
-
+                    const score = upload[Object.keys(upload)[c]];
+    
+                    if  (score != '' &&  Object.keys(upload)[c] != '')
+                    {
+                        
+                        // ensure that formativeTitle, className, pupilName are unique
+                        upsertObject[
+                            JSON.stringify({
+                                formativeTitle:Object.keys(upload)[c],
+                                className: upload["section"],
+                                pupilName: upload["student"]
+                            })
+                        ] = parseInt(score.slice(0, score.length - 1));
+    
+                       // console.log(`Adding ${JSON.stringify(Object.keys(upsertObject))}`)
+                    } else{
+                       // console.log("Skipping", 
+                       //     upload["section"], 
+                       //     upload["student"], 
+                       //     Object.keys(upload)[c] 
+                       //     )
+                    }
+                    
                 }
-
-                
-                
+            
             }
 
-            setProgress(prev => ++prev)
+            
             
         }
 
+        console.log("Upsert Objects", upsertObject)
+        writeToSupabase(upsertObject);
 
     }
 
+    /* Upload file to Storage */
     const uploadFile = async (file) => {
 
+        console.log("Upload Date", uploadDate);
+
+        const fileName = `/private/${uploadDate.toISOString().substring(0, 10)}.csv`
+        console.log(fileName);
         const avatarFile = file
         const { data: fileData, error: fileError } = await supabase
         .storage
         .from('data-files')
-        .upload(`/private/${file.name})}.csv`, avatarFile, {
+        .upload(fileName, 
+        file, 
+        {
             cacheControl: '3600',
             upsert: true
         });
@@ -272,6 +283,12 @@ const UploadPage = () => {
     return <div>
     <div>
         <div className="card">
+            <div>
+                <Calendar onChange={(e) => setUploadDate(e.value)}/>
+            </div>
+            <div>
+                {JSON.stringify(uploadDate)}
+            </div>
             <div>
                 <div>FileDate: {JSON.stringify(fileDate, null, 2)}</div>
                 

@@ -53,6 +53,13 @@ const UnitDisplay = ({seed, testProp, avgScores, handleFormativeClick}) => {
          
     }
 
+    const calcAvgForFormative = (classScores) => {
+
+        return (classScores.reduce((prev, cur) => {
+            return prev + (Object.values(cur)[0] || 0)
+        }, 0)) / classScores.length
+    }
+
     
     if (!selectedUnit)
         return <h1>Loading</h1>
@@ -63,6 +70,7 @@ const UnitDisplay = ({seed, testProp, avgScores, handleFormativeClick}) => {
             <tr>
                 <th></th>
                 {displayObj && Object.values(displayObj)[0]?.map((c, i) => <th className="class-title" key={i}>{Object.keys(c)[0]}</th>)}
+                <th className="class-title">Avg</th>
             </tr>
             {
                 // display the formative scores for each class
@@ -70,7 +78,8 @@ const UnitDisplay = ({seed, testProp, avgScores, handleFormativeClick}) => {
                     .sort((a, b) => a.title > b.title ? -1 : 1)
                     .map((k, i) => <tr key={`c${i}`}>
                     <td className="formative-title" key={i}>{k}</td> 
-                    {displayObj[k].map((avg, i) => <td key={i} className={`avg-score ${selectedFormativeTitle == k && selectedClassId == Object.keys(avg)[0] ? 'selected' : ''}`} onClick={()=> {handleClick( k,Object.keys(avg)[0] )}}>{Object.values(avg)[0]?.toFixed(2)}</td>)}  
+                    {displayObj[k].map((avg, i) => <td key={i} className={`avg-score ${selectedFormativeTitle == k && selectedClassId == Object.keys(avg)[0] ? 'selected' : ''}`} onClick={()=> {handleClick( k,Object.keys(avg)[0] )}}>{(Object.values(avg)[0] || 0)?.toFixed(2)}</td>)} 
+                    <td className="avg-score f-avg"> {calcAvgForFormative(displayObj[k]).toFixed(2)}</td> 
                     </tr>)
             }
             <tr ><td className="totals"></td>
@@ -83,6 +92,8 @@ const UnitDisplay = ({seed, testProp, avgScores, handleFormativeClick}) => {
             }</tr>
             
         </table>
+
+        
        
 
         
@@ -107,6 +118,11 @@ const UnitDisplay = ({seed, testProp, avgScores, handleFormativeClick}) => {
             .avg-score {
                 text-align: right;
                 font-size: 0.8rem;
+            }
+
+            .f-avg {
+                border-left: solid silver 1px;
+                text-align: right;  57.29
             }
 
             .selected {

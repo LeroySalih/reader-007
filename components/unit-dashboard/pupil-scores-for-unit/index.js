@@ -17,7 +17,7 @@ const PupilScoresForUnit = () => {
         const loadData = async () => {
             if (!selectedUnit) return;
 
-            const {data, error} = await supabase.from("gf_pupil_scores_for_unit")
+            const {data, error} = await supabase.from("vw_pupil_scores_for_unit")
                                                 .select()
                                                 .in("className", selectedUnit.classes)
                                                 .in("formativeTitle", selectedUnit.formativeTitles)        
@@ -106,7 +106,9 @@ const DisplayClass = ({classData, formativeTitles}) => {
         
         <div key={`${classData.title}_1`}>Name:</div>,
         <div key={`${classData.title}_2`}>Score:</div>,
-        Object.keys(formativeTitles).map((ft, i) => <div  key={i} >{ft.slice(0,7)}</div>),
+        Object.keys(formativeTitles)
+            
+            .map((ft, i) => <div  key={i} >{ft.slice(0,7)}</div>),
 
         
         ...(Object.keys(pupils)
